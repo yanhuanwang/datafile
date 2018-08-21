@@ -1,8 +1,6 @@
-/*
+/*-
  * ============LICENSE_START=======================================================
- * Datafile Collector Service
- * ================================================================================
- * Copyright (C) 2018 NOKIA Intellectual Property. All rights reserved.
+ *  Copyright (C) 2018 Ericsson. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +13,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
-
 package org.onap.dcaegen2.collectors.datafile.service.config;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,10 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
 import org.onap.dcaegen2.collectors.datafile.config.ImmutableDmaapConsumerConfiguration;
 
-class DmaapConsumerConfigurationTest {
+public class DmaapConsumerConfigurationTest {
 
     @Test
-    void builder_shouldBuildConfigurationObject() {
+    public void builder_shouldBuildConfigurationObject() {
 
         // Given
         DmaapConsumerConfiguration configuration;
@@ -45,19 +44,11 @@ class DmaapConsumerConfigurationTest {
         Integer messageLimit = 1000;
 
         // When
-        configuration = new ImmutableDmaapConsumerConfiguration.Builder()
-            .consumerId(consumerId)
-            .dmaapHostName(dmaapHostName)
-            .dmaapPortNumber(dmaapPortNumber)
-            .dmaapTopicName(dmaapTopicName)
-            .dmaapProtocol(dmaapProtocol)
-            .dmaapUserName(dmaapUserName)
-            .dmaapUserPassword(dmaapUserPassword)
-            .dmaapContentType(dmaapContentType)
-            .consumerGroup(consumerGroup)
-            .timeoutMs(timeoutMs)
-            .messageLimit(messageLimit)
-            .build();
+        configuration = new ImmutableDmaapConsumerConfiguration.Builder().consumerId(consumerId)
+                .dmaapHostName(dmaapHostName).dmaapPortNumber(dmaapPortNumber).dmaapTopicName(dmaapTopicName)
+                .dmaapProtocol(dmaapProtocol).dmaapUserName(dmaapUserName).dmaapUserPassword(dmaapUserPassword)
+                .dmaapContentType(dmaapContentType).consumerGroup(consumerGroup).timeoutMS(timeoutMs)
+                .messageLimit(messageLimit).build();
 
         // Then
         Assertions.assertNotNull(configuration);
@@ -69,7 +60,7 @@ class DmaapConsumerConfigurationTest {
         Assertions.assertEquals(dmaapUserName, configuration.dmaapUserName());
         Assertions.assertEquals(dmaapUserPassword, configuration.dmaapUserPassword());
         Assertions.assertEquals(consumerGroup, configuration.consumerGroup());
-        Assertions.assertEquals(timeoutMs, configuration.timeoutMs());
+        Assertions.assertEquals(timeoutMs, configuration.timeoutMS());
         Assertions.assertEquals(messageLimit, configuration.messageLimit());
     }
 }

@@ -1,8 +1,6 @@
-/*
+/*-
  * ============LICENSE_START=======================================================
- * Datafile Collector Service
- * ================================================================================
- * Copyright (C) 2018 NOKIA Intellectual Property. All rights reserved.
+ *  Copyright (C) 2018 Ericsson. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +13,44 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
-
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.apache.commons.io.FilenameUtils;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
 import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
 import org.onap.dcaegen2.collectors.datafile.configuration.Config;
+import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
+import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
+import org.onap.dcaegen2.collectors.datafile.ftp.FtpsClient;
+import org.onap.dcaegen2.collectors.datafile.ftp.SftpClient;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.service.DmaapConsumerJsonParser;
-import org.onap.dcaegen2.collectors.datafile.service.consumer.DMaaPConsumerReactiveHttpClient;
+import org.onap.dcaegen2.collectors.datafile.service.FileData;
+import org.onap.dcaegen2.collectors.datafile.service.consumer.ExtendedDmaapConsumerHttpClientImpl;
+import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 /**
- * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 3/23/18
+ * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a> on 7/27/18
  */
 @Component
-public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
+public class DmaapConsumerTaskImpl extends DmaapConsumerTask<String,ArrayList<ConsumerDmaapModel>, DmaapConsumerConfiguration> {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerTaskImpl.class);
     private final Config datafileAppConfig;
+    private ExtendedDmaapConsumerHttpClientImpl extendedDmaapConsumerHttpClient;
     private DmaapConsumerJsonParser dmaapConsumerJsonParser;
-    private DMaaPConsumerReactiveHttpClient dmaaPConsumerReactiveHttpClient;
 
     @Autowired
     public DmaapConsumerTaskImpl(AppConfig datafileAppConfig) {
@@ -55,16 +64,59 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     }
 
     @Override
-    Mono<ConsumerDmaapModel> consume(Mono<String> message) {
-        logger.info("Consumed model from DMaaP: {}", message);
+    ArrayList<FileData> consume(String message) throws DmaapNotFoundException {
+        logger.trace("Method called with arg {}", message);
         return dmaapConsumerJsonParser.getJsonObject(message);
     }
 
     @Override
-    public Mono<ConsumerDmaapModel> execute(String object) {
-        dmaaPConsumerReactiveHttpClient = resolveClient();
+    public ArrayList<ConsumerDmaapModel> execute(String object) throws DatafileTaskException {
+    	ArrayList<ConsumerDmaapModel> res=new ArrayList<ConsumerDmaapModel>();
+        extendedDmaapConsumerHttpClient = resolveClient();
         logger.trace("Method called with arg {}", object);
-        return consume((dmaaPConsumerReactiveHttpClient.getDMaaPConsumerResponse()));
+        ArrayList<FileData> listOfFileData = consume((extendedDmaapConsumerHttpClient.getHttpConsumerResponse()
+                .orElseThrow(() -> new DatafileTaskException("DmaapConsumerTask has returned null"))));
+        for (int i = 0; i < listOfFileData.size(); i++) {
+
+            // extract info from each element of listOfFileData
+            System.out.println(listOfFileData.get(i).toString());
+            String compression=listOfFileData.get(i).getCompression();
+            String fileFormatType=listOfFileData.get(i).getFileFormatType();
+            String fileFormatVersion=listOfFileData.get(i).getFileFormatVersion();
+            
+            // ftpes://user:pass@192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz
+            String location = listOfFileData.get(i).getLocation();
+            URI uri = URI.create(location);
+            String serverAddress = uri.getHost();
+            String userInfoString = uri.getUserInfo();
+            String[] userInfo= new String[2];
+            String userId=new String();
+            String password=new String();
+            if(userInfoString!=null && !userInfoString.isEmpty()) {
+            	userInfo = userInfoString.split(":");
+            	userId = userInfo[0];
+            	password = userInfo[1];
+            }
+            int port = uri.getPort();
+            String remoteFile = uri.getPath();
+            String localFile = "target/" + FilenameUtils.getName(remoteFile);
+            String scheme = uri.getScheme();
+
+            if ("ftpes".equals(scheme) || "ftps".equals(scheme)) {
+                FtpsClient ftpsClient = new FtpsClient(serverAddress, userId, password, port, remoteFile, localFile);
+                ftpsClient.collectFile();
+            } else if ("sftp".equals(scheme)) {
+                SftpClient sftpClient = new SftpClient(serverAddress, userId, password, port, remoteFile, localFile);
+                sftpClient.collectFile();
+            } else {
+                logger.trace("DFC does not support protocal {}", scheme);
+                continue;
+            }
+            ConsumerDmaapModel consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location(localFile).compression(compression)
+                    .fileFormatType(fileFormatType).fileFormatVersion(fileFormatVersion).build();
+            res.add(consumerDmaapModel);
+        }
+        return res;
     }
 
     @Override
@@ -73,14 +125,13 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     }
 
     @Override
-    protected DmaapConsumerConfiguration resolveConfiguration() {
+    DmaapConsumerConfiguration resolveConfiguration() {
         return datafileAppConfig.getDmaapConsumerConfiguration();
     }
 
     @Override
-    DMaaPConsumerReactiveHttpClient resolveClient() {
-        return dmaaPConsumerReactiveHttpClient == null
-            ? new DMaaPConsumerReactiveHttpClient(resolveConfiguration()).createDMaaPWebClient(buildWebClient())
-            : dmaaPConsumerReactiveHttpClient;
+    ExtendedDmaapConsumerHttpClientImpl resolveClient() {
+        return Optional.ofNullable(extendedDmaapConsumerHttpClient)
+                .orElseGet(() -> new ExtendedDmaapConsumerHttpClientImpl(resolveConfiguration()));
     }
 }

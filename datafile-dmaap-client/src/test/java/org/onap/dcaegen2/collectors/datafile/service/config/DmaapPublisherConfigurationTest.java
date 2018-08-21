@@ -1,8 +1,6 @@
-/*
+/*-
  * ============LICENSE_START=======================================================
- * Datafile Collector Service
- * ================================================================================
- * Copyright (C) 2018 NOKIA Intellectual Property. All rights reserved.
+ *  Copyright (C) 2018 Ericsson. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +13,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
-
 package org.onap.dcaegen2.collectors.datafile.service.config;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,11 +24,11 @@ import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.config.ImmutableDmaapPublisherConfiguration;
 
-class DmaapPublisherConfigurationTest {
+public class DmaapPublisherConfigurationTest {
 
 
     @Test
-    void builder_shouldBuildConfigurationObject() {
+    public void builder_shouldBuildConfigurationObject() {
 
         // Given
         DmaapPublisherConfiguration configuration;
@@ -42,15 +41,10 @@ class DmaapPublisherConfigurationTest {
         String dmaapContentType = "application/json";
 
         // When
-        configuration = new ImmutableDmaapPublisherConfiguration.Builder()
-            .dmaapHostName(dmaapHostName)
-            .dmaapPortNumber(dmaapPortNumber)
-            .dmaapTopicName(dmaapTopicName)
-            .dmaapProtocol(dmaapProtocol)
-            .dmaapUserName(dmaapUserName)
-            .dmaapUserPassword(dmaapUserPassword)
-            .dmaapContentType(dmaapContentType)
-            .build();
+        configuration = new ImmutableDmaapPublisherConfiguration.Builder().dmaapHostName(dmaapHostName)
+                .dmaapPortNumber(dmaapPortNumber).dmaapTopicName(dmaapTopicName).dmaapProtocol(dmaapProtocol)
+                .dmaapUserName(dmaapUserName).dmaapUserPassword(dmaapUserPassword).dmaapContentType(dmaapContentType)
+                .build();
 
         // Then
         Assertions.assertNotNull(configuration);

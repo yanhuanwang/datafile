@@ -1,8 +1,6 @@
-/*
+/*-
  * ============LICENSE_START=======================================================
- * Datafile Collector Service
- * ================================================================================
- * Copyright (C) 2018 NOKIA Intellectual Property. All rights reserved.
+ *  Copyright (C) 2018 Ericsson. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +13,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
-
 package org.onap.dcaegen2.collectors.datafile.config;
 
 import java.io.Serializable;
 
 import org.immutables.value.Value;
+import org.onap.dcaegen2.collectors.datafile.config.DmaapCustomConfig;
 
 /**
- * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 3/28/18
+ * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a> on 3/28/18
  */
 public interface DmaapCustomConfig extends Serializable {
 
