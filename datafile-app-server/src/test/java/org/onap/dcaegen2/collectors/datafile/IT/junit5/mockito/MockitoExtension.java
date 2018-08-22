@@ -1,6 +1,6 @@
-/*-
+/*
  * ============LICENSE_START=======================================================
- *  Copyright (C) 2018 Ericsson. All rights reserved.
+ * Copyright (C) 2018 NOKIA Intellectual Property. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
 package org.onap.dcaegen2.collectors.datafile.IT.junit5.mockito;
@@ -33,11 +31,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
- * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a> on 3/27/18
+ * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 3/27/18
  *
- * {@code MockitoExtension} showcases the {@link TestInstancePostProcessor} and {@link ParameterResolver} extension APIs
- * of JUnit 5 by providing dependency injection support at the field level and at the method parameter level via Mockito
- * 2.x's {@link Mock @Mock} annotation.
+ *         {@code MockitoExtension} showcases the {@link TestInstancePostProcessor} and
+ *         {@link ParameterResolver} extension APIs of JUnit 5 by providing dependency injection
+ *         support at the field level and at the method parameter level via Mockito 2.x's
+ *         {@link Mock @Mock} annotation.
  */
 public class MockitoExtension implements TestInstancePostProcessor, ParameterResolver {
 

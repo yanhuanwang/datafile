@@ -1,6 +1,6 @@
-/*-
+/*
  * ============LICENSE_START=======================================================
- *  Copyright (C) 2018 Ericsson. All rights reserved.
+ * Copyright (C) 2018 Nordix Foundation. All rights reserved.
  * ================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
  * ============LICENSE_END=========================================================
  */
 package org.onap.dcaegen2.collectors.datafile.ftp;
@@ -53,10 +51,10 @@ public class FtpsClient {
             ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
             // try to connect
             try {
-            	ftps.connect(serverAddress, port);
-            }catch(Exception ex) {
-            	ex.printStackTrace();
-            	return;
+                ftps.connect(serverAddress, port);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return;
             }
 
             // login to server
@@ -76,9 +74,9 @@ public class FtpsClient {
             // enter passive mode
             ftps.enterLocalPassiveMode();
             // get system name
-//            System.out.println("Remote system is " + ftps.getSystemType());
+            // System.out.println("Remote system is " + ftps.getSystemType());
             // get current directory
-//            System.out.println("Current directory is " + ftps.printWorkingDirectory());
+            // System.out.println("Current directory is " + ftps.printWorkingDirectory());
 
             // get output stream
             OutputStream output;
