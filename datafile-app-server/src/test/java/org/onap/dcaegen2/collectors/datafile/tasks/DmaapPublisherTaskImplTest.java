@@ -58,76 +58,73 @@ class DmaapPublisherTaskImplTest {
 
     @BeforeAll
     public static void setUp() {
-        dmaapPublisherConfiguration = new ImmutableDmaapPublisherConfiguration.Builder()
-            .dmaapContentType("application/json").dmaapHostName("54.45.33.2").dmaapPortNumber(1234)
-            .dmaapProtocol("https").dmaapUserName("PRH").dmaapUserPassword("PRH")
-            .dmaapTopicName("unauthenticated.SEC_OTHER_OUTPUT").build();
-        consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location("target/A20161224.1030-1045.bin.gz").compression("gzip")
-                .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        listOfConsumerDmaapModel=new ArrayList<ConsumerDmaapModel>();
+        dmaapPublisherConfiguration =
+                new ImmutableDmaapPublisherConfiguration.Builder().dmaapContentType("application/json")
+                        .dmaapHostName("54.45.33.2").dmaapPortNumber(1234).dmaapProtocol("https").dmaapUserName("PRH")
+                        .dmaapUserPassword("PRH").dmaapTopicName("unauthenticated.SEC_OTHER_OUTPUT").build();
+        consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location("target/A20161224.1030-1045.bin.gz")
+                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
+        listOfConsumerDmaapModel = new ArrayList<ConsumerDmaapModel>();
         listOfConsumerDmaapModel.add(consumerDmaapModel);
         appConfig = mock(AppConfig.class);
     }
 
     @Test
     public void whenPassedObjectDoesntFit_ThrowsDatafileTaskException() {
-        //given
+        // given
         when(appConfig.getDmaapPublisherConfiguration()).thenReturn(dmaapPublisherConfiguration);
         dmaapPublisherTask = new DmaapPublisherTaskImpl(appConfig);
 
-        //when
+        // when
         Executable executableFunction = () -> dmaapPublisherTask.execute(null);
 
-        //then
-        Assertions
-            .assertThrows(DatafileTaskException.class, executableFunction, "The specified parameter is incorrect");
+        // then
+        Assertions.assertThrows(DatafileTaskException.class, executableFunction,
+                "The specified parameter is incorrect");
     }
 
     @Test
     public void whenPassedObjectFits_ReturnsCorrectStatus() throws DatafileTaskException {
-        //given
+        // given
         prepareMocksForTests(HttpStatus.OK.value());
 
-        //when
+        // when
         ArrayList<Integer> response = dmaapPublisherTask.execute(listOfConsumerDmaapModel);
 
-        //then
-        verify(extendedDmaapProducerHttpClient, times(1))
-            .getHttpProducerResponse(any(ConsumerDmaapModel.class));
+        // then
+        verify(extendedDmaapProducerHttpClient, times(1)).getHttpProducerResponse(any(ConsumerDmaapModel.class));
         verifyNoMoreInteractions(extendedDmaapProducerHttpClient);
-        for(int i=0;i<response.size();i++) {
-        	Assertions.assertEquals((Integer) HttpStatus.OK.value(), response.get(i));
+        for (int i = 0; i < response.size(); i++) {
+            Assertions.assertEquals((Integer) HttpStatus.OK.value(), response.get(i));
         }
     }
-    
+
     @Test
     public void whenPassedObjectFits_ReturnsNoContent() throws DatafileTaskException {
-        //given
+        // given
         prepareMocksForTests(HttpStatus.NO_CONTENT.value());
 
-        //when
+        // when
         ArrayList<Integer> response = dmaapPublisherTask.execute(listOfConsumerDmaapModel);
 
-        //then
-        verify(extendedDmaapProducerHttpClient, times(1))
-            .getHttpProducerResponse(any(ConsumerDmaapModel.class));
+        // then
+        verify(extendedDmaapProducerHttpClient, times(1)).getHttpProducerResponse(any(ConsumerDmaapModel.class));
         verifyNoMoreInteractions(extendedDmaapProducerHttpClient);
-        for(int i=0;i<response.size();i++) {
-        	Assertions.assertEquals((Integer) HttpStatus.NO_CONTENT.value(), response.get(i));
+        for (int i = 0; i < response.size(); i++) {
+            Assertions.assertEquals((Integer) HttpStatus.NO_CONTENT.value(), response.get(i));
         }
     }
 
     @Test
     public void whenPassedObjectFits_butIncorrectResponseReturns() {
-        //given
+        // given
         prepareMocksForTests(HttpStatus.UNAUTHORIZED.value());
 
-        //when
+        // when
         Executable executableFunction = () -> dmaapPublisherTask.execute(listOfConsumerDmaapModel);
 
-        //then
-        Assertions
-            .assertThrows(DatafileTaskException.class, executableFunction, "Incorrect response from DMAAP");
+        // then
+        Assertions.assertThrows(DatafileTaskException.class, executableFunction, "Incorrect response from DMAAP");
         verify(extendedDmaapProducerHttpClient, times(1)).getHttpProducerResponse(any(ConsumerDmaapModel.class));
         verifyNoMoreInteractions(extendedDmaapProducerHttpClient);
     }
@@ -136,7 +133,7 @@ class DmaapPublisherTaskImplTest {
     private void prepareMocksForTests(Integer httpResponseCode) {
         extendedDmaapProducerHttpClient = mock(ExtendedDmaapProducerHttpClientImpl.class);
         when(extendedDmaapProducerHttpClient.getHttpProducerResponse(consumerDmaapModel))
-            .thenReturn(Optional.of(httpResponseCode));
+                .thenReturn(Optional.of(httpResponseCode));
         when(appConfig.getDmaapPublisherConfiguration()).thenReturn(dmaapPublisherConfiguration);
         dmaapPublisherTask = spy(new DmaapPublisherTaskImpl(appConfig));
         when(dmaapPublisherTask.resolveConfiguration()).thenReturn(dmaapPublisherConfiguration);

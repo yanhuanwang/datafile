@@ -37,8 +37,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.onap.dcaegen2.collectors.datafile.IT.junit5.mockito.MockitoExtension;
-import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
-import org.onap.dcaegen2.collectors.datafile.configuration.DatafileAppConfig;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;

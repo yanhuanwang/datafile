@@ -27,24 +27,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 public class SftpClient {
-    private String username;
-    private String host;
-    private String password;
-    private String remoteFile;
-    private String localFile;
-    private int port;
-
-    public SftpClient(String host, String username, String password, int port, String remoteFile, String localFile) {
-        super();
-        this.username = username;
-        this.host = host;
-        this.password = password;
-        this.remoteFile = remoteFile;
-        this.localFile = localFile;
-        this.port = port;
-    }
-
-    public void collectFile() {
+    public void collectFile(String host, String username, String password, int port, String remoteFile, String localFile) {
         JSch jsch = new JSch();
         Session session = null;
         try {
@@ -65,11 +48,5 @@ public class SftpClient {
         } catch (SftpException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public String toString() {
-        return "SftpClient [username=" + username + ", host=" + host + ", password=" + password + ", remoteFile="
-                + remoteFile + ", localFile=" + localFile + ", port=" + port + "]";
     }
 }

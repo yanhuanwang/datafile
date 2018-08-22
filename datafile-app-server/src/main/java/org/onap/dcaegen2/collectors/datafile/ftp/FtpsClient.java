@@ -27,25 +27,8 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.TrustManagerUtils;
 
 public class FtpsClient {
-    private String serverAddress;
-    private String userId;
-    private String password;
-    private int port;
-    private String remoteFile;
-    private String localFile;
-
-    public FtpsClient(String serverAddress, String userId, String password, int port, String remoteFile,
+    public void collectFile(String serverAddress, String userId, String password, int port, String remoteFile,
             String localFile) {
-        super();
-        this.serverAddress = serverAddress;
-        this.userId = userId;
-        this.password = password;
-        this.port = port;
-        this.remoteFile = remoteFile;
-        this.localFile = localFile;
-    }
-
-    public void collectFile() {
         try {
             FTPSClient ftps = new FTPSClient("TLS");
             ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
@@ -96,7 +79,5 @@ public class FtpsClient {
             ex.printStackTrace();
 
         }
-
     }
-
 }

@@ -66,45 +66,50 @@ public class DmaapConsumerJsonParser {
     }
 
     private ArrayList<FileData> create(JsonObject jsonObject) throws DmaapNotFoundException {
-        ArrayList<FileData> res = new ArrayList<>();
         if (containsHeader(jsonObject, EVENT, NOTIFICATION_FIELDS)) {
             JsonObject notificationFields = jsonObject.getAsJsonObject(EVENT).getAsJsonObject(NOTIFICATION_FIELDS);
             String changeIdentifier = getValueFromJson(notificationFields, CHANGE_IDENTIFIER);
             String changeType = getValueFromJson(notificationFields, CHANGE_TYPE);
             String notificationFieldsVersion = getValueFromJson(notificationFields, NOTIFICATION_FIELDS_VERSION);
             JsonArray arrayOfAdditionalFields = notificationFields.getAsJsonArray("arrayOfAdditionalFields");
-            // should be arrayOfAdditionalFields instead of additionalFields, updated
-            // in DCAE meeting, June 8th
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfAdditionalFields != null) {
-                // handle multiple.
-                for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
-                    if (arrayOfAdditionalFields.get(i) != null) {
-                        JsonObject fileInfo = (JsonObject) arrayOfAdditionalFields.get(i);
-                        String fileFormatType = getValueFromJson(fileInfo, FILE_FORMAT_TYPE);
-                        String fileFormatVersion = getValueFromJson(fileInfo, FILE_FORMAT_VERSION);
-                        String location = getValueFromJson(fileInfo, LOCATION);
-                        String compression = getValueFromJson(fileInfo, COMPRESSION);
-                        if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
-                                && isLocationAndCompressionNotEmpty(location, compression)) {
-                            res.add(new FileData(changeIdentifier, changeType, location, compression, fileFormatType,
-                                    fileFormatVersion));
-                        } else {
-                            throw new DmaapNotFoundException(
-                                    "FileReady event does not contain correct file format information. " + jsonObject);
-                        }
-                    } else {
-                        throw new DmaapNotFoundException("additionalField is null. " + jsonObject);
-                    }
-                }
+                ArrayList<FileData> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
                 return res;
             }
 
+            if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
+                throw new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject);
+            } else if (arrayOfAdditionalFields != null) {
+                throw new DmaapNotFoundException("FileReady event arrayOfAdditionalFields is missing. " + jsonObject);
+            }
             throw new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject);
         }
-        throw new DmaapNotFoundException("Incorrect JsonObject - missing header. " + jsonObject);
+        throw new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject);
 
+    }
+
+    private ArrayList<FileData> getFileDataFromJson(String changeIdentifier, String changeType, JsonArray arrayOfAdditionalFields) throws DmaapNotFoundException {
+        ArrayList<FileData> res = new ArrayList<>();
+        for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
+            if (arrayOfAdditionalFields.get(i) != null) {
+                JsonObject fileInfo = (JsonObject) arrayOfAdditionalFields.get(i);
+                String fileFormatType = getValueFromJson(fileInfo, FILE_FORMAT_TYPE);
+                String fileFormatVersion = getValueFromJson(fileInfo, FILE_FORMAT_VERSION);
+                String location = getValueFromJson(fileInfo, LOCATION);
+                String compression = getValueFromJson(fileInfo, COMPRESSION);
+                if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
+                        && isLocationAndCompressionNotEmpty(location, compression)) {
+                    res.add(new FileData(changeIdentifier, changeType, location, compression, fileFormatType,
+                            fileFormatVersion));
+                } else {
+                    throw new DmaapNotFoundException(
+                            "FileReady event does not contain correct file format information. " + fileInfo);
+                }
+            }
+        }
+        return res;
     }
 
     private String getValueFromJson(JsonObject jsonObject, String jsonKey) {
