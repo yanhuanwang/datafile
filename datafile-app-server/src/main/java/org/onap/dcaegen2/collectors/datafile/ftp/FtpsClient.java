@@ -26,6 +26,14 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.TrustManagerUtils;
 
+/**
+ * Gets file from xNF with FTPS protocoll.
+ * 
+ * TODO: Refactor for better test and error handling.
+ * 
+ * @author  <a href="mailto:martin.c.yan@est.tech">Martin Yan</a>
+ *
+ */
 public class FtpsClient {
     public void collectFile(String serverAddress, String userId, String password, int port, String remoteFile,
             String localFile) {

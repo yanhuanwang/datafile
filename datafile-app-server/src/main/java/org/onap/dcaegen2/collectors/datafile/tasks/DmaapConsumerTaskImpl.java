@@ -108,6 +108,7 @@ public class DmaapConsumerTaskImpl
             String localFile = "target/" + FilenameUtils.getName(remoteFile);
             String scheme = uri.getScheme();
 
+            // TODO: Refactor for better error handling.
             if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
                 FtpsClient ftpsClient = getFtpsClient();
                 ftpsClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
