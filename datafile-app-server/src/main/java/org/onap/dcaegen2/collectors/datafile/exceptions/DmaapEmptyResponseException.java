@@ -16,15 +16,14 @@
  * ============LICENSE_END========================================================================
  */
 
-package org.onap.dcaegen2.collectors.datafile.model.utils;
+package org.onap.dcaegen2.collectors.datafile.exceptions;
 
-import org.apache.http.HttpStatus;
+/**
+ * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 6/13/18
+ */
+public class DmaapEmptyResponseException extends DatafileTaskException {
 
-public final class HttpUtils implements HttpStatus {
-
-    private HttpUtils() {}
-
-    public static boolean isSuccessfulResponseCode(Integer statusCode) {
-        return statusCode >= 200 && statusCode < 300;
+    public DmaapEmptyResponseException() {
+        super();
     }
 }

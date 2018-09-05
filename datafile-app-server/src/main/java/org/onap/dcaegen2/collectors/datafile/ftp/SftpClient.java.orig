@@ -30,6 +30,14 @@ import com.jcraft.jsch.SftpException;
 
 /**
  * Gets file from xNF with SFTP protocoll.
+<<<<<<< Updated upstream
+ * 
+ * TODO: Refactor for better test and error handling.
+ * 
+ * @author  <a href="mailto:martin.c.yan@est.tech">Martin Yan</a>
+ *
+ */
+=======
  *
  * TODO: Refactor for better test and error handling.
  *
@@ -37,6 +45,7 @@ import com.jcraft.jsch.SftpException;
  *
  */
 @Component
+>>>>>>> Stashed changes
 public class SftpClient {
     public void collectFile(String host, String username, String password, int port, String remoteFile, String localFile) {
         JSch jsch = new JSch();

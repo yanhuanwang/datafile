@@ -1,7 +1,7 @@
 /*
- * ============LICENSE_START=======================================================
+ * ============LICENSE_START======================================================================
  * Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
- * ================================================================================
+ * ===============================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,12 +13,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ============LICENSE_END=========================================================
+ * ============LICENSE_END========================================================================
  */
-package org.onap.dcaegen2.collectors.datafile.IT;
+
+package org.onap.dcaegen2.collectors.datafile.integration;
 
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.Executors;
@@ -28,11 +28,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.onap.dcaegen2.collectors.datafile.IT.junit5.mockito.MockitoExtension;
-import org.onap.dcaegen2.collectors.datafile.configuration.DatafileAppConfig;
-import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.tasks.ScheduledTasks;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -65,20 +62,3 @@ class ScheduledXmlContextITest extends AbstractTestNGSpringContextTests {
         verify(scheduledTask, atLeast(1)).scheduleMainDatafileEventTask();
     }
 }
-
-
-@Configuration
-class ServiceMockProvider {
-
-    @Bean
-    public DatafileAppConfig getDatafileAppConfig() {
-        return mock(DatafileAppConfig.class);
-    }
-
-    @Bean
-    public ConsumerDmaapModel getRequestDetails() {
-        return mock(ConsumerDmaapModel.class);
-    }
-}
-
-

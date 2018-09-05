@@ -48,10 +48,9 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     FileCollector fileCollector;
 
     @Autowired
-    public DmaapConsumerTaskImpl(AppConfig datafileAppConfig, FileCollector fileCollector) {
+    public DmaapConsumerTaskImpl(AppConfig datafileAppConfig) {
         this.datafileAppConfig = datafileAppConfig;
         this.dmaapConsumerJsonParser = new DmaapConsumerJsonParser();
-        this.fileCollector = fileCollector;
     }
 
     protected DmaapConsumerTaskImpl(AppConfig datafileAppConfig,
@@ -69,10 +68,69 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
         return dmaapConsumerJsonParser.getJsonObject(message);
     }
 
+<<<<<<< Updated upstream
+    @Override
+    public ArrayList<ConsumerDmaapModel> execute(String object) throws DatafileTaskException {
+        ArrayList<ConsumerDmaapModel> res = new ArrayList<ConsumerDmaapModel>();
+        extendedDmaapConsumerHttpClient = resolveClient();
+        logger.trace("Method called with arg {}", object);
+        ArrayList<FileData> listOfFileData = consume((extendedDmaapConsumerHttpClient.getHttpConsumerResponse()
+                .orElseThrow(() -> new DatafileTaskException("DmaapConsumerTask has returned null"))));
+        for (int i = 0; i < listOfFileData.size(); i++) {
+            String compression = listOfFileData.get(i).getCompression();
+            String fileFormatType = listOfFileData.get(i).getFileFormatType();
+            String fileFormatVersion = listOfFileData.get(i).getFileFormatVersion();
+
+            String location = listOfFileData.get(i).getLocation();
+            URI uri = URI.create(location);
+            String serverAddress = uri.getHost();
+            String userInfoString = uri.getUserInfo();
+            String[] userInfo = new String[2];
+            String userId = new String();
+            String password = new String();
+            if (userInfoString != null && !userInfoString.isEmpty()) {
+                userInfo = userInfoString.split(":");
+                userId = userInfo[0];
+                password = userInfo[1];
+            }
+            int port = uri.getPort();
+            String remoteFile = uri.getPath();
+            String localFile = "target/" + FilenameUtils.getName(remoteFile);
+            String scheme = uri.getScheme();
+
+            // TODO: Refactor for better error handling.
+            if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
+                FtpsClient ftpsClient = getFtpsClient();
+                ftpsClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
+            } else if (SFTP.equals(scheme)) {
+                SftpClient sftpClient = getSftpClient();
+                sftpClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
+            } else {
+                logger.trace("DFC does not support protocol {}. Supported protocols are " + FTPES + ", " + FTPS
+                        + ", and " + SFTP + ".", scheme);
+                continue;
+            }
+            ConsumerDmaapModel consumerDmaapModel =
+                    ImmutableConsumerDmaapModel.builder().location(localFile).compression(compression)
+                            .fileFormatType(fileFormatType).fileFormatVersion(fileFormatVersion).build();
+            res.add(consumerDmaapModel);
+        }
+        return res;
+    }
+
+    /**
+     * @return the ftpsClient
+     */
+    private FtpsClient getFtpsClient() {
+        if (ftpsClient == null) {
+            ftpsClient = new FtpsClient();
+        }
+        return ftpsClient;
+=======
     private Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
         Mono<ArrayList<ConsumerDmaapModel>> filesFromSender = fileCollector.getFilesFromSender(listOfFileData);
         return filesFromSender;
-            // TODO: Refactor for better error handling.
+>>>>>>> Stashed changes
     }
 
     @Override

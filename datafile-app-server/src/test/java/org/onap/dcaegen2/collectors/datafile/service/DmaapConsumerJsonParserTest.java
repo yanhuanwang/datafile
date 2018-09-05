@@ -1,7 +1,7 @@
 /*
- * ============LICENSE_START=======================================================
+ * ============LICENSE_START======================================================================
  * Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
- * ================================================================================
+ * ===============================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,8 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ============LICENSE_END=========================================================
+ * ============LICENSE_END========================================================================
  */
+
 package org.onap.dcaegen2.collectors.datafile.service;
 
 import static org.mockito.Mockito.spy;
@@ -31,6 +32,9 @@ import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage.AdditionalField;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 5/8/18
@@ -59,7 +63,7 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        ArrayList<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(messageString);
+        ArrayList<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
         // then
         Assertions.assertNotNull(listOfFileData);
         Assertions.assertEquals(expectedFileData, listOfFileData.get(0));
@@ -80,8 +84,8 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(messageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectError(DmaapNotFoundException.class).verify();
     }
 
     @Test
@@ -100,8 +104,8 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(messageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectError(DmaapNotFoundException.class).verify();
     }
 
     @Test
@@ -120,8 +124,8 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(messageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectError(DmaapNotFoundException.class).verify();
     }
 
     @Test
@@ -140,8 +144,8 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(messageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectError(DmaapNotFoundException.class).verify();
     }
 
     // Fixed temprarily
@@ -156,8 +160,8 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(incorrectMessageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(incorrectMessageString)))
+                .expectSubscription().expectError(DmaapNotFoundException.class).verify();
     }
 
     @Test
@@ -172,7 +176,7 @@ class DmaapConsumerJsonParserTest {
         // System.out.println(jsonElement);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        Assertions.assertThrows(DmaapNotFoundException.class,
-                () -> dmaapConsumerJsonParser.getJsonObject(incorrectMessageString));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(incorrectMessageString)))
+                .expectSubscription().expectError(DmaapNotFoundException.class).verify();
     }
 }

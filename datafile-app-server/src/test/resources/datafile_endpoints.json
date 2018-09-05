@@ -15,7 +15,7 @@
 				"timeoutMS": 1000
 			},
 			"dmaapProducerConfiguration": {
-				"dmaapContentType": "application/json",
+				"dmaapContentType": "application/octet-stream",
 				"dmaapHostName": "localhost",
 				"dmaapPortNumber": 2223,
 				"dmaapProtocol": "http",

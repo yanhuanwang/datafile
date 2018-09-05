@@ -1,7 +1,7 @@
 /*
- * ============LICENSE_START=======================================================
+ * ============LICENSE_START======================================================================
  * Copyright (C) 2018 Nordix Foundation. All rights reserved.
- * ================================================================================
+ * ===============================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,8 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ============LICENSE_END=========================================================
+ * ============LICENSE_END========================================================================
  */
+
 package org.onap.dcaegen2.collectors.datafile.utils;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class JsonMessage {
     public String getParsed() {
         StringBuffer additionalFieldsString = new StringBuffer();
         if (arrayOfAdditionalFields.size() > 0) {
-            additionalFieldsString.append(",\"arrayOfAdditionalFields\": [");
+            additionalFieldsString.append("\"arrayOfAdditionalFields\": [");
             for (Iterator iterator = arrayOfAdditionalFields.iterator(); iterator.hasNext();) {
                 AdditionalField additionalField = (AdditionalField) iterator.next();
                 additionalFieldsString.append(additionalField.toString());
@@ -51,6 +52,7 @@ public class JsonMessage {
             }
             additionalFieldsString.append("]");
         }
+
         return "{" + "\"event\":{" + "\"commonEventHeader\":{" + "\"domain\":\"notification\","
                 + "\"eventId\":\"<<SerialNumber>>-reg\"," + "\"eventName\":\"EriNoti_RnNode_FileReady\","
                 + "\"eventType\":\"fileReady\"," + "\"internalHeaderFields\":{},"
@@ -58,9 +60,13 @@ public class JsonMessage {
                 + "\"priority\":\"Normal\"," + "\"reportingEntityName\":\"5GRAN_DU\"," + "\"sequence\":0,"
                 + "\"sourceId\":\"<<SerialNumber>>\"," + "\"sourceName\":\"5GRAN_DU\","
                 + "\"startEpochMicrosec\":\"1519837825682\"," + "\"version\":3" + "}," + "\"notificationFields\":{"
-                + "\"changeIdentifier\":\"" + changeIdentifier + "\"," + "\"changeType\":\"" + changeType + "\","
-                + "\"notificationFieldsVersion\": " + notificationFieldsVersion + additionalFieldsString.toString()
-                + "}" + "}" + "}";
+                + getAsStringIfParameterIsSet("changeIdentifier", changeIdentifier,
+                        changeType != null || notificationFieldsVersion != null || arrayOfAdditionalFields.size() > 0)
+                + getAsStringIfParameterIsSet("changeType", changeType,
+                        notificationFieldsVersion != null || arrayOfAdditionalFields.size() > 0)
+                + getAsStringIfParameterIsSet("notificationFieldsVersion", notificationFieldsVersion,
+                        arrayOfAdditionalFields.size() > 0)
+                + additionalFieldsString.toString() + "}" + "}" + "}";
     }
 
     private JsonMessage(final JsonMessageBuilder builder) {
@@ -95,17 +101,6 @@ public class JsonMessage {
             this.fileFormatVersion = builder.fileFormatVersion;
         }
 
-        private String getAsStringIfParameterIsSet(String parameterName, String parameterValue, boolean withSeparator) {
-            String result = "";
-            if (parameterValue != null) {
-                result = "\"" + parameterName + "\":\"" + parameterValue + "\"";
-
-                if (withSeparator) {
-                    result = result + ",";
-                }
-            }
-            return result;
-        }
     }
 
     public static class AdditionalFieldBuilder {
@@ -168,6 +163,19 @@ public class JsonMessage {
         public JsonMessage build() {
             return new JsonMessage(this);
         }
+    }
+
+    private static String getAsStringIfParameterIsSet(String parameterName, String parameterValue,
+            boolean withSeparator) {
+        String result = "";
+        if (parameterValue != null) {
+            result = "\"" + parameterName + "\":\"" + parameterValue + "\"";
+
+            if (withSeparator) {
+                result = result + ",";
+            }
+        }
+        return result;
     }
 
     /**

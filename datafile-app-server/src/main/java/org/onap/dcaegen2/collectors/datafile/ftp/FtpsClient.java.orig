@@ -30,6 +30,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * Gets file from xNF with FTPS protocoll.
+<<<<<<< Updated upstream
+ * 
+ * TODO: Refactor for better test and error handling.
+ * 
+ * @author  <a href="mailto:martin.c.yan@est.tech">Martin Yan</a>
+ *
+ */
+=======
  *
  * TODO: Refactor for better test and error handling.
  *
@@ -37,6 +45,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
+>>>>>>> Stashed changes
 public class FtpsClient {
     public void collectFile(String serverAddress, String userId, String password, int port, String remoteFile,
             String localFile) {

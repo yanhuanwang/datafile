@@ -1,7 +1,7 @@
 /*
- * ============LICENSE_START=======================================================
+ * ============LICENSE_START======================================================================
  * Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
- * ================================================================================
+ * ===============================================================================================
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,23 +13,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ============LICENSE_END=========================================================
+ * ============LICENSE_END========================================================================
  */
+
 package org.onap.dcaegen2.collectors.datafile.service;
 
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapEmptyResponseException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
+import org.springframework.util.StringUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import reactor.core.publisher.Mono;
+
 /**
- * Parses the fileReady event and creates a Dmaap model containing the information.
+ * Parses the fileReady event and creates an array of FileData containing the information.
  *
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 5/8/18
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
@@ -47,25 +52,43 @@ public class DmaapConsumerJsonParser {
     private static final String FILE_FORMAT_TYPE = "fileFormatType";
     private static final String FILE_FORMAT_VERSION = "fileFormatVersion";
 
-    public ArrayList<FileData> getJsonObject(String message) throws DmaapNotFoundException {
-        JsonElement jsonElement = new JsonParser().parse(message);
-        if (jsonElement.isJsonNull()) {
-            throw new DmaapNotFoundException("Json object is null");
-        }
-        if (jsonElement.isJsonObject()) {
-            return create(jsonElement.getAsJsonObject());
-        } else {
-            return create(StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false).findFirst()
-                    .flatMap(this::getJsonObjectFromAnArray)
-                    .orElseThrow(() -> new DmaapNotFoundException("Json object not found in json array")));
-        }
+    /**
+     * Extract info from string and create @see
+     * {@link org.onap.dcaegen2.collectors.datafile.service.FileData}.
+     *
+     * @param monoMessage - results from DMaaP
+     * @return reactive Mono with an array of FileData
+     */
+    public Mono<ArrayList<FileData>> getJsonObject(Mono<String> monoMessage) {
+        return monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
+    }
+
+    private Mono<JsonElement> getJsonParserMessage(String message) {
+        return StringUtils.isEmpty(message) ? Mono.error(new DmaapEmptyResponseException())
+                : Mono.fromSupplier(() -> new JsonParser().parse(message));
+    }
+
+    private Mono<ArrayList<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
+        return jsonElement.isJsonObject() ? create(Mono.fromSupplier(jsonElement::getAsJsonObject))
+                : getFileDataFromJsonArray(jsonElement);
+    }
+
+    private Mono<ArrayList<FileData>> getFileDataFromJsonArray(JsonElement jsonElement) {
+        return create(Mono.fromCallable(() -> StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
+                .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
     }
 
     public Optional<JsonObject> getJsonObjectFromAnArray(JsonElement element) {
         return Optional.of(new JsonParser().parse(element.getAsString()).getAsJsonObject());
     }
 
-    private ArrayList<FileData> create(JsonObject jsonObject) throws DmaapNotFoundException {
+    private Mono<ArrayList<FileData>> create(Mono<JsonObject> jsonObject) {
+        return jsonObject.flatMap(monoJsonP -> !containsHeader(monoJsonP)
+                ? Mono.error(new DmaapNotFoundException("Incorrect JsonObject - missing header"))
+                : transform(monoJsonP));
+    }
+
+    private Mono<ArrayList<FileData>> transform(JsonObject jsonObject) {
         if (containsHeader(jsonObject, EVENT, NOTIFICATION_FIELDS)) {
             JsonObject notificationFields = jsonObject.getAsJsonObject(EVENT).getAsJsonObject(NOTIFICATION_FIELDS);
             String changeIdentifier = getValueFromJson(notificationFields, CHANGE_IDENTIFIER);
@@ -75,22 +98,23 @@ public class DmaapConsumerJsonParser {
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfAdditionalFields != null) {
-                ArrayList<FileData> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
+                Mono<ArrayList<FileData>> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
                 return res;
             }
 
             if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
-                throw new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject);
+                return Mono.error(new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
             } else if (arrayOfAdditionalFields != null) {
-                throw new DmaapNotFoundException("FileReady event arrayOfAdditionalFields is missing. " + jsonObject);
+                return Mono.error(new DmaapNotFoundException("FileReady event arrayOfAdditionalFields is missing. " + jsonObject));
             }
-            throw new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject);
+            return Mono.error(new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
         }
-        throw new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject);
+        return Mono.error(new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject));
 
     }
 
-    private ArrayList<FileData> getFileDataFromJson(String changeIdentifier, String changeType, JsonArray arrayOfAdditionalFields) throws DmaapNotFoundException {
+    private Mono<ArrayList<FileData>> getFileDataFromJson(String changeIdentifier, String changeType,
+            JsonArray arrayOfAdditionalFields) {
         ArrayList<FileData> res = new ArrayList<>();
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
             if (arrayOfAdditionalFields.get(i) != null) {
@@ -104,20 +128,16 @@ public class DmaapConsumerJsonParser {
                     res.add(new FileData(changeIdentifier, changeType, location, compression, fileFormatType,
                             fileFormatVersion));
                 } else {
-                    throw new DmaapNotFoundException(
-                            "FileReady event does not contain correct file format information. " + fileInfo);
+                    return Mono.error(new DmaapNotFoundException(
+                            "FileReady event does not contain correct file format information. " + fileInfo));
                 }
             }
         }
-        return res;
+        return Mono.just(res);
     }
 
     private String getValueFromJson(JsonObject jsonObject, String jsonKey) {
-        if (jsonObject.has(jsonKey)) {
-            return jsonObject.get(jsonKey).isJsonNull() ? "" : jsonObject.get(jsonKey).getAsString();
-        } else {
-            return "";
-        }
+        return jsonObject.has(jsonKey) ? jsonObject.get(jsonKey).getAsString() : "";
     }
 
     private boolean isNotificationFieldsHeaderNotEmpty(String changeIdentifier, String changeType,
