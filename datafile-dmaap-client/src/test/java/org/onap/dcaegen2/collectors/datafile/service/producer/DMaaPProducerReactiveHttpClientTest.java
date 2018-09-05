@@ -121,5 +121,7 @@ class DMaaPProducerReactiveHttpClientTest {
 
         when(requestBodyUriSpecMock.retrieve()).thenReturn(responseSpecMock);
         when(responseSpecMock.onStatus(any(), any())).thenReturn(responseSpecMock);
+        Mono<String> expectedResult = Mono.just("200");
+        when(responseSpecMock.bodyToMono(String.class)).thenReturn(expectedResult);
     }
 }

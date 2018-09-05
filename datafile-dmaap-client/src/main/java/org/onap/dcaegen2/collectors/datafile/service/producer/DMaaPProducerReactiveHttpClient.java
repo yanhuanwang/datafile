@@ -113,6 +113,7 @@ public class DMaaPProducerReactiveHttpClient {
         ResponseSpec responseSpec = post.retrieve();
         responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> Mono.error(new Exception("HTTP 400"))); // TODO: Handle better.
         responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.error(new Exception("HTTP 500"))); // TODO: Handle better.
+        String bodyToMono = responseSpec.bodyToMono(String.class).block();
      // TODO: Handle other responses from DataRouter
     }
 
