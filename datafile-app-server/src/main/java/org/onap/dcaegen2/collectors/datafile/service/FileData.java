@@ -23,6 +23,8 @@ import java.util.Objects;
 /**
  * Contains data, from the fileReady event, about the file to collect from the xNF.
  *
+ * TODO: Might be changed to Immutable  as an improvement after first version committed.
+ *
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  *
  */
@@ -34,14 +36,6 @@ public class FileData {
     protected String fileFormatType;
     protected String fileFormatVersion;
 
-    /**
-     * @param changeIdentifier
-     * @param changeType
-     * @param location
-     * @param compression
-     * @param fileFormatType
-     * @param fileFormatVersion
-     */
     public FileData(String changeIdentifier, String changeType, String location, String compression,
             String fileFormatType, String fileFormatVersion) {
         this.changeIdentifier = changeIdentifier;

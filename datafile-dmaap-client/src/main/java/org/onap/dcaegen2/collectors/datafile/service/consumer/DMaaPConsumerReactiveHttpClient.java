@@ -32,6 +32,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 6/26/18
+ * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 public class DMaaPConsumerReactiveHttpClient {
 

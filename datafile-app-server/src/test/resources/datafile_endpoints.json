@@ -1,28 +1,28 @@
 {
-	"configs": {
-		"dmaap": {
-			"dmaapConsumerConfiguration": {
-				"consumerGroup": "notification",
-				"consumerId": "1",
-				"dmaapContentType": "application/json",
-				"dmaapHostName": "localhost",
-				"dmaapPortNumber": 2222,
-				"dmaapProtocol": "http",
-				"dmaapTopicName": "/events/fileReady",
-				"dmaapUserName": "admin",
-				"dmaapUserPassword": "admin",
-				"messageLimit": 1000,
-				"timeoutMS": 1000
-			},
-			"dmaapProducerConfiguration": {
-				"dmaapContentType": "application/octet-stream",
-				"dmaapHostName": "localhost",
-				"dmaapPortNumber": 2223,
-				"dmaapProtocol": "http",
-				"dmaapTopicName": "/events/fileReady",
-				"dmaapUserName": "admin",
-				"dmaapUserPassword": "admin"
-			}
-		}
-	}
+    "configs": {
+        "dmaap": {
+            "dmaapConsumerConfiguration": {
+                "consumerGroup": "notification",
+                "consumerId": "1",
+                "dmaapContentType": "application/json",
+                "dmaapHostName": "localhost",
+                "dmaapPortNumber": 2222,
+                "dmaapProtocol": "http",
+                "dmaapTopicName": "/events/fileReady",
+                "dmaapUserName": "admin",
+                "dmaapUserPassword": "admin",
+                "messageLimit": 1000,
+                "timeoutMS": 1000
+            },
+            "dmaapProducerConfiguration": {
+                "dmaapContentType": "application/octet-stream",
+                "dmaapHostName": "localhost",
+                "dmaapPortNumber": 2223,
+                "dmaapProtocol": "http",
+                "dmaapTopicName": "/events/fileReady",
+                "dmaapUserName": "admin",
+                "dmaapUserPassword": "admin"
+            }
+        }
+    }
 }

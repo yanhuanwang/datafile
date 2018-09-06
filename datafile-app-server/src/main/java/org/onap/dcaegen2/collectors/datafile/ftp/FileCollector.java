@@ -39,7 +39,7 @@ import reactor.core.publisher.Mono;
  *
  */
 @Component
-public class FileCollector {
+public class FileCollector { // TODO: Should be final, but that means adding PowerMock for testing so it is left for later improvement.
     private static final String FTPES = "ftpes";
     private static final String FTPS = "ftps";
     private static final String SFTP = "sftp";
@@ -87,7 +87,7 @@ public class FileCollector {
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
 
-        // TODO: Refactor for better error handling.
+        // TODO: Refactor for better error handling. Will be done as an improvement after first version committed.
         if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
             ftpsClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
         } else if (SFTP.equals(scheme)) {

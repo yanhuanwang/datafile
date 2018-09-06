@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 3/23/18
- * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a> on 4/9/18
+ * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 
 @Component
