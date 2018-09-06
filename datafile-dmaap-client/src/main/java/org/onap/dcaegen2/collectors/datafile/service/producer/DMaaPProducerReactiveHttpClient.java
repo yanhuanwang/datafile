@@ -20,20 +20,17 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Optional;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
@@ -95,6 +92,19 @@ public class DMaaPProducerReactiveHttpClient {
 
     private void postFileAndData(ConsumerDmaapModel model) {
         RequestBodyUriSpec post = webClient.post();
+
+        prepareHead(model, post);
+
+        prepareBody(model, post);
+
+        ResponseSpec responseSpec = post.retrieve();
+        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> Mono.error(new Exception("HTTP 400"))); // TODO: Handle better.
+        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.error(new Exception("HTTP 500"))); // TODO: Handle better.
+        String bodyToMono = responseSpec.bodyToMono(String.class).block();
+     // TODO: Handle other responses from DataRouter
+    }
+
+    private void prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
         post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
 
         JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
@@ -107,30 +117,17 @@ public class DMaaPProducerReactiveHttpClient {
             logger.warn("Exception while evaluating URI");
             // TODO: What to do?
         }
+    }
 
-        // TODO: Somehow add the stream.
-
-        ResponseSpec responseSpec = post.retrieve();
-        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> Mono.error(new Exception("HTTP 400"))); // TODO: Handle better.
-        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.error(new Exception("HTTP 500"))); // TODO: Handle better.
-        String bodyToMono = responseSpec.bodyToMono(String.class).block();
-     // TODO: Handle other responses from DataRouter
+    private void prepareBody(ConsumerDmaapModel model, RequestBodyUriSpec post) {
+        String fileLocation = model.getLocation();
+        File fileResource = new File(fileLocation);
+        FileSystemResource httpResource = new FileSystemResource(fileResource);
+        post.body(BodyInserters.fromResource(httpResource));
     }
 
     URI getUri() throws URISyntaxException {
         return new URIBuilder().setScheme(dmaapProtocol).setHost(dmaapHostName).setPort(dmaapPortNumber)
                 .setPath(dmaapTopicName).build();
-    }
-
-    private Optional<HttpEntity> createStringEntity(String fileLocation) {
-        String fileName = FilenameUtils.getName(fileLocation);
-
-        try {
-            return Optional.of(
-                    MultipartEntityBuilder.create().addPart(fileName, new FileBody(new File(fileLocation))).build());
-        } catch (IllegalArgumentException e) {
-            logger.warn("Exception while creating file entity: ", e);
-        }
-        return Optional.empty();
     }
 }

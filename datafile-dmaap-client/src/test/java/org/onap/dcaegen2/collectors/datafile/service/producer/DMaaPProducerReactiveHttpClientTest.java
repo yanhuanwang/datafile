@@ -113,6 +113,7 @@ class DMaaPProducerReactiveHttpClientTest {
             // Nothing
         }
         verify(requestBodyUriSpecMock).uri(expectedUri);
+        verify(requestBodyUriSpecMock).body(any());
     }
 
     private void mockWebClientDependantObject() {
