@@ -27,7 +27,7 @@
     <version>0.1.1</version>
     <relativePath />
   </parent>
-  <groupId>org.onap.dcaegen2.services</groupId>
+  <groupId>org.onap.dcaegen2.collectors</groupId>
   <artifactId>datafile</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <name>dcaegen2-collectors.datafile</name>
@@ -193,7 +193,7 @@
           </executions>
         </plugin>
 
-        <!-- maven-surefire-plugin which is used during the test phase of
+        <!-- maven-surefire-plugin which is used during the test phase of 
           build lifecycle -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -512,9 +512,19 @@
         <version>4.5.4</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>4.3.1</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>3.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.3.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
@@ -525,6 +535,17 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
         <version>5.0.5.RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webflux</artifactId>
+        <version>5.0.5.RELEASE</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-reactor-netty</artifactId>
+        <version>2.0.4.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>org.apache.tomcat.embed</groupId>
@@ -614,6 +635,17 @@
         <artifactId>spring-boot-starter-test</artifactId>
         <version>2.0.1.RELEASE</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockftpserver</groupId>
+        <artifactId>MockFtpServer</artifactId>
+        <version>2.0.2</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.stefanbirkner</groupId>
+        <artifactId>fake-sftp-server-rule</artifactId>
+        <version>2.0.1</version>
       </dependency>
 
       <!--REQUIRED TO GENERATE DOCUMENTATION -->

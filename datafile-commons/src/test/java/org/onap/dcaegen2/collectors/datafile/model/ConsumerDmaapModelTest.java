@@ -23,23 +23,23 @@ public class ConsumerDmaapModelTest {
 
     // Given
     private ConsumerDmaapModel consumerDmaapModel;
-    private String location = "target/A20161224.1030-1045.bin.gz";
-    private String compression = "gzip";
-    private String fileFormatType = "org.3GPP.32.435#measCollec";
-    private String fileFormatVersion = "V10";
+    private final static String LOCATION = "target/A20161224.1030-1045.bin.gz";
+    private final static String COMPRESSION = "gzip";
+    private final static String FILE_FORMAT_TYPE = "org.3GPP.32.435#measCollec";
+    private final static String FILE_FORMAT_VERSION = "V10";
 
     @Test
     public void consumerDmaapModelBuilder_shouldBuildAnObject() {
 
         // When
-        consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location(location).compression(compression)
-                .fileFormatType(fileFormatType).fileFormatVersion(fileFormatVersion).build();
+        consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location(LOCATION).compression(COMPRESSION)
+                .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         // Then
         Assertions.assertNotNull(consumerDmaapModel);
-        Assertions.assertEquals(location, consumerDmaapModel.getLocation());
-        Assertions.assertEquals(compression, consumerDmaapModel.getCompression());
-        Assertions.assertEquals(fileFormatType, consumerDmaapModel.getFileFormatType());
-        Assertions.assertEquals(fileFormatVersion, consumerDmaapModel.getFileFormatVersion());
+        Assertions.assertEquals(LOCATION, consumerDmaapModel.getLocation());
+        Assertions.assertEquals(COMPRESSION, consumerDmaapModel.getCompression());
+        Assertions.assertEquals(FILE_FORMAT_TYPE, consumerDmaapModel.getFileFormatType());
+        Assertions.assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
     }
 }

@@ -62,7 +62,7 @@ public class SchedulerConfig extends DatafileAppConfig {
         scheduledFutureList.forEach(x -> x.cancel(false));
         scheduledFutureList.clear();
         return Mono.defer(
-                () -> Mono.just(new ResponseEntity<>("PRH Service has already been stopped!", HttpStatus.CREATED)));
+                () -> Mono.just(new ResponseEntity<>("Datafile Service has already been stopped!", HttpStatus.CREATED)));
     }
 
     /**

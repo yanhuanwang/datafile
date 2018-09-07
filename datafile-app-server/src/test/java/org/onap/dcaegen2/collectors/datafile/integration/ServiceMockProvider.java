@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Configuration;
 class ServiceMockProvider {
 
     @Bean
-    public DatafileAppConfig getPrhAppConfig() {
+    public DatafileAppConfig getDatafileAppConfig() {
         return mock(DatafileAppConfig.class);
     }
 
