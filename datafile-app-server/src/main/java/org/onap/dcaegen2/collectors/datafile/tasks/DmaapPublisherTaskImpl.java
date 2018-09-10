@@ -26,7 +26,7 @@ import org.onap.dcaegen2.collectors.datafile.configuration.Config;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
-import org.onap.dcaegen2.collectors.datafile.service.producer.DMaaPProducerReactiveHttpClient;
+import org.onap.dcaegen2.collectors.datafile.service.producer.DmaapProducerReactiveHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public class DmaapPublisherTaskImpl extends
 
     private static final Logger logger = LoggerFactory.getLogger(DmaapPublisherTaskImpl.class);
     private final Config datafileAppConfig;
-    private DMaaPProducerReactiveHttpClient dmaapProducerReactiveHttpClient;
+    private DmaapProducerReactiveHttpClient dmaapProducerReactiveHttpClient;
 
     @Autowired
     public DmaapPublisherTaskImpl(AppConfig datafileAppConfig) {
@@ -54,7 +54,7 @@ public class DmaapPublisherTaskImpl extends
     @Override
     public Mono<String> publish(Mono<ArrayList<ConsumerDmaapModel>> listOfonsumerDmaapModel) throws DatafileTaskException {
         logger.info("Publishing on DMaaP DataRouter {}", listOfonsumerDmaapModel);
-            return dmaapProducerReactiveHttpClient.getDMaaPProducerResponse(listOfonsumerDmaapModel);
+            return dmaapProducerReactiveHttpClient.getDmaapProducerResponse(listOfonsumerDmaapModel);
     }
 
     @Override
@@ -73,9 +73,9 @@ public class DmaapPublisherTaskImpl extends
     }
 
     @Override
-    DMaaPProducerReactiveHttpClient resolveClient() {
+    DmaapProducerReactiveHttpClient resolveClient() {
         return dmaapProducerReactiveHttpClient == null
-            ? new DMaaPProducerReactiveHttpClient(resolveConfiguration()).createDMaaPWebClient(buildWebClient())
+            ? new DmaapProducerReactiveHttpClient(resolveConfiguration()).createDmaapWebClient(buildWebClient())
             : dmaapProducerReactiveHttpClient;
     }
 }

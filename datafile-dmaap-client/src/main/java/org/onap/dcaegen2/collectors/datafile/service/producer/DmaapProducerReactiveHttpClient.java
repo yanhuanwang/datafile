@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 7/4/18
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
-public class DMaaPProducerReactiveHttpClient {
+public class DmaapProducerReactiveHttpClient {
 
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
     private static final String LOCATION = "location";
@@ -59,11 +59,11 @@ public class DMaaPProducerReactiveHttpClient {
     private final String dmaapContentType;
 
     /**
-     * Constructor DMaaPProducerReactiveHttpClient.
+     * Constructor DmaapProducerReactiveHttpClient.
      *
      * @param dmaapPublisherConfiguration - DMaaP producer configuration object
      */
-    public DMaaPProducerReactiveHttpClient(DmaapPublisherConfiguration dmaapPublisherConfiguration) {
+    public DmaapProducerReactiveHttpClient(DmaapPublisherConfiguration dmaapPublisherConfiguration) {
 
         this.dmaapHostName = dmaapPublisherConfiguration.dmaapHostName();
         this.dmaapProtocol = dmaapPublisherConfiguration.dmaapProtocol();
@@ -78,14 +78,14 @@ public class DMaaPProducerReactiveHttpClient {
      * @param consumerDmaapModelMono - object which will be sent to DMaaP
      * @return status code of operation
      */
-    public Mono<String> getDMaaPProducerResponse(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModelMono) {
+    public Mono<String> getDmaapProducerResponse(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModelMono) {
         consumerDmaapModelMono.subscribe(
                 models -> postFilesAndData(models));
         // TODO: Add better error handling.
         return Mono.just("200");
     }
 
-    public DMaaPProducerReactiveHttpClient createDMaaPWebClient(WebClient webClient) {
+    public DmaapProducerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
         this.webClient = webClient;
         return this;
     }

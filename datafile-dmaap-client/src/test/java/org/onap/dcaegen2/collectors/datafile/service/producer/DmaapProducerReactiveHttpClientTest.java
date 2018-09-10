@@ -47,7 +47,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 7/4/18
  */
-class DMaaPProducerReactiveHttpClientTest {
+class DmaapProducerReactiveHttpClientTest {
 
     private static final String LOCATION = "location";
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
@@ -58,7 +58,7 @@ class DMaaPProducerReactiveHttpClientTest {
     private static final String APPLICATION_OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
     private static final String FILE_READY_TOPIC = "fileReady";
 
-    private DMaaPProducerReactiveHttpClient dmaapProducerReactiveHttpClient;
+    private DmaapProducerReactiveHttpClient dmaapProducerReactiveHttpClient;
 
     private DmaapPublisherConfiguration dmaapPublisherConfigurationMock = mock(DmaapPublisherConfiguration.class);
     private ConsumerDmaapModel consumerDmaapModel = new ConsumerDmaapModelForUnitTest();
@@ -77,7 +77,7 @@ class DMaaPProducerReactiveHttpClientTest {
         when(dmaapPublisherConfigurationMock.dmaapContentType()).thenReturn(APPLICATION_OCTET_STREAM_CONTENT_TYPE);
         when(dmaapPublisherConfigurationMock.dmaapTopicName()).thenReturn(FILE_READY_TOPIC);
 
-        dmaapProducerReactiveHttpClient = new DMaaPProducerReactiveHttpClient(dmaapPublisherConfigurationMock);
+        dmaapProducerReactiveHttpClient = new DmaapProducerReactiveHttpClient(dmaapPublisherConfigurationMock);
 
         webClientMock = spy(WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, dmaapPublisherConfigurationMock.dmaapContentType())
@@ -94,11 +94,11 @@ class DMaaPProducerReactiveHttpClientTest {
 
         // when
         mockWebClientDependantObject();
-        dmaapProducerReactiveHttpClient.createDMaaPWebClient(webClientMock);
+        dmaapProducerReactiveHttpClient.createDmaapWebClient(webClientMock);
         ArrayList<ConsumerDmaapModel> consumerDmaapModelList = new ArrayList<ConsumerDmaapModel>();
         consumerDmaapModelList.add(consumerDmaapModel);
 
-        dmaapProducerReactiveHttpClient.getDMaaPProducerResponse(Mono.just(consumerDmaapModelList));
+        dmaapProducerReactiveHttpClient.getDmaapProducerResponse(Mono.just(consumerDmaapModelList));
 
         // then
         verify(requestBodyUriSpecMock).header(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);

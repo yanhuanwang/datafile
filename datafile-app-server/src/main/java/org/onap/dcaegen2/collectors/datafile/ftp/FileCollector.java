@@ -39,15 +39,15 @@ import reactor.core.publisher.Mono;
  *
  */
 @Component
-public class FileCollector { // TODO: Should be final, but that means adding PowerMock for testing so it is left for later improvement.
+public class FileCollector { // TODO: Should be final, but that means adding PowerMock or Mockito 2.x for testing so it is left for later improvement.
     private static final String FTPES = "ftpes";
     private static final String FTPS = "ftps";
     private static final String SFTP = "sftp";
 
     private static final Logger logger = LoggerFactory.getLogger(FileCollector.class);
 
-    private FtpsClient ftpsClient;
-    private SftpClient sftpClient;
+    private final FtpsClient ftpsClient;
+    private final SftpClient sftpClient;
 
     @Autowired
     protected FileCollector(FtpsClient ftpsCleint, SftpClient sftpClient) {

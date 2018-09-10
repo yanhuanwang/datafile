@@ -62,7 +62,7 @@ public class ScheduledTasks {
     public void scheduleMainDatafileEventTask() {
         logger.trace("Execution of tasks was registered");
 
-        Mono<String> dmaapProducerResponse = Mono.fromCallable(consumeFromDMaaPMessage())
+        Mono<String> dmaapProducerResponse = Mono.fromCallable(consumeFromDmaapMessage())
             .doOnError(DmaapEmptyResponseException.class, error -> logger.warn("Nothing to consume from DMaaP"))
             .flatMap(this::publishToDmaapConfiguration)
             .subscribeOn(Schedulers.elastic());
@@ -84,7 +84,7 @@ public class ScheduledTasks {
         }
     }
 
-    private Callable<Mono<ArrayList<ConsumerDmaapModel>>> consumeFromDMaaPMessage() {
+    private Callable<Mono<ArrayList<ConsumerDmaapModel>>> consumeFromDmaapMessage() {
         return () -> {
             dmaapConsumerTask.initConfigs();
             return dmaapConsumerTask.execute("");

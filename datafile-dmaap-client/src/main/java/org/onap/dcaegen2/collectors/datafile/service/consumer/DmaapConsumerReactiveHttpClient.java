@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 6/26/18
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
-public class DMaaPConsumerReactiveHttpClient {
+public class DmaapConsumerReactiveHttpClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -47,11 +47,11 @@ public class DMaaPConsumerReactiveHttpClient {
     private final String consumerId;
 
     /**
-     * Constructor of DMaaPConsumerReactiveHttpClient.
+     * Constructor of DmaapConsumerReactiveHttpClient.
      *
      * @param consumerConfiguration - DMaaP consumer configuration object
      */
-    public DMaaPConsumerReactiveHttpClient(DmaapConsumerConfiguration consumerConfiguration) {
+    public DmaapConsumerReactiveHttpClient(DmaapConsumerConfiguration consumerConfiguration) {
         this.dmaapHostName = consumerConfiguration.dmaapHostName();
         this.dmaapProtocol = consumerConfiguration.dmaapProtocol();
         this.dmaapPortNumber = consumerConfiguration.dmaapPortNumber();
@@ -65,7 +65,7 @@ public class DMaaPConsumerReactiveHttpClient {
      *
      * @return reactive response from DMaaP in string format
      */
-    public Mono<String> getDMaaPConsumerResponse() {
+    public Mono<String> getDmaapConsumerResponse() {
         try {
             return webClient
                 .get()
@@ -87,7 +87,7 @@ public class DMaaPConsumerReactiveHttpClient {
         return dmaapTopicName + "/" + consumerGroup + "/" + consumerId;
     }
 
-    public DMaaPConsumerReactiveHttpClient createDMaaPWebClient(WebClient webClient) {
+    public DmaapConsumerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
         this.webClient = webClient;
         return this;
     }

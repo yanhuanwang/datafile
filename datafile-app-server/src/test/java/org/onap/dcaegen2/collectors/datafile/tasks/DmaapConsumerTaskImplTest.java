@@ -39,7 +39,7 @@ import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.service.DmaapConsumerJsonParser;
 import org.onap.dcaegen2.collectors.datafile.service.FileData;
-import org.onap.dcaegen2.collectors.datafile.service.consumer.DMaaPConsumerReactiveHttpClient;
+import org.onap.dcaegen2.collectors.datafile.service.consumer.DmaapConsumerReactiveHttpClient;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage.AdditionalField;
 
@@ -71,7 +71,7 @@ class DmaapConsumerTaskImplTest {
     private static AppConfig appConfig;
     private static DmaapConsumerConfiguration dmaapConsumerConfiguration;
     private DmaapConsumerTaskImpl dmaapConsumerTask;
-    private DMaaPConsumerReactiveHttpClient dMaaPConsumerReactiveHttpClient;
+    private DmaapConsumerReactiveHttpClient dMaaPConsumerReactiveHttpClient;
 
     private static FileCollector fileCollectorMock;
 
@@ -128,7 +128,7 @@ class DmaapConsumerTaskImplTest {
         StepVerifier.create(dmaapConsumerTask.execute("Sample input")).expectSubscription()
                 .expectError(DmaapEmptyResponseException.class).verify();
 
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDMaaPConsumerResponse();
+        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
     }
 
     @Test
@@ -138,7 +138,7 @@ class DmaapConsumerTaskImplTest {
         // when
         ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDMaaPConsumerResponse();
+        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dMaaPConsumerReactiveHttpClient);
         verify(fileCollectorMock, times(1)).getFilesFromSender(ftpesFileDataAfterConsume);
         verifyNoMoreInteractions(fileCollectorMock);
@@ -153,7 +153,7 @@ class DmaapConsumerTaskImplTest {
         // when
         ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDMaaPConsumerResponse();
+        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dMaaPConsumerReactiveHttpClient);
         verify(fileCollectorMock, times(1)).getFilesFromSender(sftpFileDataAfterConsume);
         verifyNoMoreInteractions(fileCollectorMock);
@@ -164,8 +164,8 @@ class DmaapConsumerTaskImplTest {
     private void prepareMocksForDmaapConsumer(String message, ArrayList<FileData> fileDataAfterConsume) {
         Mono<String> messageAsMono = Mono.just(message);
         DmaapConsumerJsonParser dmaapConsumerJsonParserMock = mock(DmaapConsumerJsonParser.class);
-        dMaaPConsumerReactiveHttpClient = mock(DMaaPConsumerReactiveHttpClient.class);
-        when(dMaaPConsumerReactiveHttpClient.getDMaaPConsumerResponse()).thenReturn(messageAsMono);
+        dMaaPConsumerReactiveHttpClient = mock(DmaapConsumerReactiveHttpClient.class);
+        when(dMaaPConsumerReactiveHttpClient.getDmaapConsumerResponse()).thenReturn(messageAsMono);
 
         if (!message.isEmpty()) {
             when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono))

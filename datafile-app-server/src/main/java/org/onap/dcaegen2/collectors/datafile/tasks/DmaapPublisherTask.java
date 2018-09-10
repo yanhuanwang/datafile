@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
-import org.onap.dcaegen2.collectors.datafile.service.DMaaPReactiveWebClient;
-import org.onap.dcaegen2.collectors.datafile.service.producer.DMaaPProducerReactiveHttpClient;
+import org.onap.dcaegen2.collectors.datafile.service.DmaapReactiveWebClient;
+import org.onap.dcaegen2.collectors.datafile.service.producer.DmaapProducerReactiveHttpClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
@@ -37,13 +37,13 @@ abstract class DmaapPublisherTask {
 
     abstract Mono<String> publish(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModel) throws DatafileTaskException;
 
-    abstract DMaaPProducerReactiveHttpClient resolveClient();
+    abstract DmaapProducerReactiveHttpClient resolveClient();
 
     protected abstract DmaapPublisherConfiguration resolveConfiguration();
 
     protected abstract Mono<String> execute(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModel) throws DatafileTaskException;
 
     WebClient buildWebClient() {
-        return new DMaaPReactiveWebClient().fromConfiguration(resolveConfiguration()).build();
+        return new DmaapReactiveWebClient().fromConfiguration(resolveConfiguration()).build();
     }
 }

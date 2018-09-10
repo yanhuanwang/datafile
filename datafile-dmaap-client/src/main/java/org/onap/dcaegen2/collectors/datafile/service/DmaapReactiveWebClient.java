@@ -32,7 +32,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 7/4/18
  */
-public class DMaaPReactiveWebClient {
+public class DmaapReactiveWebClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -41,12 +41,12 @@ public class DMaaPReactiveWebClient {
     private String dmaaPUserPassword;
 
     /**
-     * Creating DMaaPReactiveWebClient passing to them basic DMaaPConfig.
+     * Creating DmaapReactiveWebClient passing to them basic DmaapConfig.
      *
      * @param dmaapCustomConfig - configuration object
-     * @return DMaaPReactiveWebClient
+     * @return DmaapReactiveWebClient
      */
-    public DMaaPReactiveWebClient fromConfiguration(DmaapCustomConfig dmaapCustomConfig) {
+    public DmaapReactiveWebClient fromConfiguration(DmaapCustomConfig dmaapCustomConfig) {
         this.dmaaPUserName = dmaapCustomConfig.dmaapUserName();
         this.dmaaPUserPassword = dmaapCustomConfig.dmaapUserPassword();
         this.dmaaPContentType = dmaapCustomConfig.dmaapContentType();

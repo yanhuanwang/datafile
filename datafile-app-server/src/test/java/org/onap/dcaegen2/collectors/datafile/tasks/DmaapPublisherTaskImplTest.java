@@ -39,7 +39,7 @@ import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
-import org.onap.dcaegen2.collectors.datafile.service.producer.DMaaPProducerReactiveHttpClient;
+import org.onap.dcaegen2.collectors.datafile.service.producer.DmaapProducerReactiveHttpClient;
 import org.springframework.http.HttpStatus;
 
 import reactor.core.publisher.Mono;
@@ -53,7 +53,7 @@ class DmaapPublisherTaskImplTest {
     private static ConsumerDmaapModel consumerDmaapModel;
     private static ArrayList<ConsumerDmaapModel> listOfConsumerDmaapModel;
     private static DmaapPublisherTaskImpl dmaapPublisherTask;
-    private static DMaaPProducerReactiveHttpClient dMaaPProducerReactiveHttpClient;
+    private static DmaapProducerReactiveHttpClient dMaaPProducerReactiveHttpClient;
     private static AppConfig appConfig;
     private static DmaapPublisherConfiguration dmaapPublisherConfiguration;
 
@@ -93,7 +93,7 @@ class DmaapPublisherTaskImplTest {
         dmaapPublisherTask.execute(Mono.just(listOfConsumerDmaapModel));
 
         // then
-        verify(dMaaPProducerReactiveHttpClient, times(1)).getDMaaPProducerResponse(any());
+        verify(dMaaPProducerReactiveHttpClient, times(1)).getDmaapProducerResponse(any());
         verifyNoMoreInteractions(dMaaPProducerReactiveHttpClient);
     }
 
@@ -105,13 +105,13 @@ class DmaapPublisherTaskImplTest {
         dmaapPublisherTask.execute(Mono.just(listOfConsumerDmaapModel));
 
         // then
-        verify(dMaaPProducerReactiveHttpClient, times(1)).getDMaaPProducerResponse(any());
+        verify(dMaaPProducerReactiveHttpClient, times(1)).getDmaapProducerResponse(any());
         verifyNoMoreInteractions(dMaaPProducerReactiveHttpClient);
     }
 
     private void prepareMocksForTests(Integer httpResponseCode) {
-        dMaaPProducerReactiveHttpClient = mock(DMaaPProducerReactiveHttpClient.class);
-        when(dMaaPProducerReactiveHttpClient.getDMaaPProducerResponse(any()))
+        dMaaPProducerReactiveHttpClient = mock(DmaapProducerReactiveHttpClient.class);
+        when(dMaaPProducerReactiveHttpClient.getDmaapProducerResponse(any()))
                 .thenReturn(Mono.just(httpResponseCode.toString()));
         when(appConfig.getDmaapPublisherConfiguration()).thenReturn(dmaapPublisherConfiguration);
         dmaapPublisherTask = spy(new DmaapPublisherTaskImpl(appConfig));
