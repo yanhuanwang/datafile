@@ -23,6 +23,12 @@
                 "dmaapUserName": "admin",
                 "dmaapUserPassword": "admin"
             }
+        },
+        "ftp": {
+            "ftpesConfiguration": {
+                "keyCert": "config/dfc-keystore.jks",
+                "trustedCA": "config/dfc-keystore.jks"
+            }
         }
     }
 }

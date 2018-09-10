@@ -48,20 +48,26 @@ import com.google.gson.JsonParser;
 class DatafileAppConfigTest {
 
     private static final String DATAFILE_ENDPOINTS = "datafile_endpoints.json";
-    private static final String JSON_STRING =
-            "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
-                    + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2222,"
-                    + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\","
-                    + "\"dmaapUserPassword\":\"admin\",\"messageLimit\":1000,\"timeoutMS\":1000},\"dmaapProducerConfiguration\":"
-                    + "{\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,"
-                    + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\"}}}}";
+    private static final String JSON_STRING = "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":"
+            + " {\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\": 2222,\"dmaapTopicName\":"
+            + " \"/events/unauthenticated.FILE_READY\",\"dmaapProtocol\":\"http\",\"dmaapUserName\":"
+            + " \"admin\",\"dmaapUserPassword\":\"admin\",\"dmaapContentType\":\"application/json\","
+            + "\"consumerId\":\"c12\",\"consumerGroup\":\"OpenDcae-c12\",\"timeoutMS\":-1,"
+            + "\"messageLimit\":1},\"dmaapProducerConfiguration\":{\"dmaapHostName\":\"localhost\""
+            + ",\"dmaapPortNumber\": 2223,\"dmaapTopicName\":\"/events/unauthenticated.FILE_READY\","
+            + "\"dmaapProtocol\":\"http\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\","
+            + "\"dmaapContentType\":\"application/octet-stream\"}},\"ftp\":{\"ftpesConfiguration\":{"
+            + "\"keyCert\":\"/Users/chengkaiyan/TLS/java/dfc2-keystore.jks\",\"trustedCA\":"
+            + " \"/Users/chengkaiyan/TLS/java/dfc2-keystore.jks\"}}}}";
     private static final String INCORRECT_JSON_STRING =
             "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
                     + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2222,"
                     + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\","
                     + "\"messageLimit\":1000,\"timeoutMS\":1000},\"dmaapProducerConfiguration\":{\"dmaapContentType\":\"application/json\","
                     + "\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,\"dmaapProtocol\":\"http\",\"dmaaptopicName\":\"temp\","
-                    + "\"dmaapuserName\":\"admin\",\"dmaapuserPassword\":\"admin\"}}}}";
+                    + "\"dmaapuserName\":\"admin\",\"dmaapuserPassword\":\"admin\"}},\"ftp\": {"
+                    + "\"ftpesConfiguration\": {" + "\"keyCert\": \"config/dfc-keystore.jks\","
+                    + "\"trustedCA\": \"config/dfc-keystore.jks\"" + "}" + "}}}";
     private static DatafileAppConfig datafileAppConfig;
     private static AppConfig appConfig;
 
@@ -96,16 +102,20 @@ class DatafileAppConfigTest {
         datafileAppConfig.initFileStreamReader();
         appConfig.dmaapConsumerConfiguration = datafileAppConfig.getDmaapConsumerConfiguration();
         appConfig.dmaapPublisherConfiguration = datafileAppConfig.getDmaapPublisherConfiguration();
+        appConfig.ftpesConfig = datafileAppConfig.getFtpesConfiguration();
 
         // Then
         verify(datafileAppConfig, times(1)).setFilepath(anyString());
         verify(datafileAppConfig, times(1)).initFileStreamReader();
         Assertions.assertNotNull(datafileAppConfig.getDmaapConsumerConfiguration());
         Assertions.assertNotNull(datafileAppConfig.getDmaapPublisherConfiguration());
+        Assertions.assertNotNull(datafileAppConfig.getFtpesConfiguration());
         Assertions.assertEquals(appConfig.getDmaapPublisherConfiguration(),
                 datafileAppConfig.getDmaapPublisherConfiguration());
         Assertions.assertEquals(appConfig.getDmaapConsumerConfiguration(),
                 datafileAppConfig.getDmaapConsumerConfiguration());
+        Assertions.assertEquals(appConfig.getFtpesConfiguration(),
+                datafileAppConfig.getFtpesConfiguration());
 
     }
 
@@ -123,7 +133,7 @@ class DatafileAppConfigTest {
         verify(datafileAppConfig, times(1)).initFileStreamReader();
         Assertions.assertNull(datafileAppConfig.getDmaapConsumerConfiguration());
         Assertions.assertNull(datafileAppConfig.getDmaapPublisherConfiguration());
-
+        Assertions.assertNull(datafileAppConfig.getFtpesConfiguration());
     }
 
     @Test
@@ -141,7 +151,7 @@ class DatafileAppConfigTest {
         verify(datafileAppConfig, times(1)).initFileStreamReader();
         Assertions.assertNotNull(datafileAppConfig.getDmaapConsumerConfiguration());
         Assertions.assertNull(datafileAppConfig.getDmaapPublisherConfiguration());
-
+        Assertions.assertNotNull(datafileAppConfig.getFtpesConfiguration());
     }
 
 
@@ -158,11 +168,13 @@ class DatafileAppConfigTest {
         datafileAppConfig.initFileStreamReader();
         appConfig.dmaapConsumerConfiguration = datafileAppConfig.getDmaapConsumerConfiguration();
         appConfig.dmaapPublisherConfiguration = datafileAppConfig.getDmaapPublisherConfiguration();
+        appConfig.ftpesConfig = datafileAppConfig.getFtpesConfiguration();
 
         // Then
         verify(datafileAppConfig, times(1)).setFilepath(anyString());
         verify(datafileAppConfig, times(1)).initFileStreamReader();
         Assertions.assertNull(datafileAppConfig.getDmaapConsumerConfiguration());
         Assertions.assertNull(datafileAppConfig.getDmaapPublisherConfiguration());
+        Assertions.assertNull(datafileAppConfig.getFtpesConfiguration());
     }
 }

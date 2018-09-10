@@ -49,17 +49,31 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
 
     private final FtpsClient ftpsClient;
     private final SftpClient sftpClient;
+    private final String keyCert;
+    private final String trustedCA;
 
     @Autowired
-    protected FileCollector(FtpsClient ftpsCleint, SftpClient sftpClient) {
-        this.ftpsClient = ftpsCleint;
+    protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient) {
+        this.ftpsClient = ftpsClient;
         this.sftpClient = sftpClient;
+        this.keyCert = "";
+        this.trustedCA = "";
     }
+
+    protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient, String keyCert, String trustedCA) {
+        this.ftpsClient = ftpsClient;
+        this.sftpClient = sftpClient;
+        this.keyCert = keyCert;
+        this.trustedCA = trustedCA;
+    }
+
+
 
     public Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
         ArrayList<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
         for (FileData fileData : listOfFileData) {
-            String localFile = collectFile(fileData);
+            String localFile = null;
+            localFile = collectFile(fileData);
 
             if (localFile != null) {
                 ConsumerDmaapModel consumerDmaapModel = getConsumerDmaapModel(fileData, localFile);
