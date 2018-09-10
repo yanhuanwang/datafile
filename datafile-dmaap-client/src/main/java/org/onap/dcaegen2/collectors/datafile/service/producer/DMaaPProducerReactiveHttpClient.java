@@ -79,16 +79,21 @@ public class DMaaPProducerReactiveHttpClient {
      * @return status code of operation
      */
     public Mono<String> getDMaaPProducerResponse(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModelMono) {
-        ArrayList<ConsumerDmaapModel> models = consumerDmaapModelMono.block();
-        for (ConsumerDmaapModel consumerDmaapModel : models) {
-            postFileAndData(consumerDmaapModel);
-        }
+        consumerDmaapModelMono.subscribe(
+                models -> postFilesAndData(models));
+        // TODO: Add better error handling.
         return Mono.just("200");
     }
 
     public DMaaPProducerReactiveHttpClient createDMaaPWebClient(WebClient webClient) {
         this.webClient = webClient;
         return this;
+    }
+
+    private void postFilesAndData(ArrayList<ConsumerDmaapModel> models) {
+        for (ConsumerDmaapModel consumerDmaapModel : models) {
+            postFileAndData(consumerDmaapModel);
+        }
     }
 
     private void postFileAndData(ConsumerDmaapModel model) {
@@ -116,7 +121,7 @@ public class DMaaPProducerReactiveHttpClient {
             post.uri(getUri());
         } catch (URISyntaxException e) {
             logger.warn("Exception while evaluating URI");
-            // TODO: What to do?
+            // TODO: Add better error handling.
         }
     }
 
