@@ -109,26 +109,10 @@ class DmaapPublisherTaskImplTest {
         verifyNoMoreInteractions(dMaaPProducerReactiveHttpClient);
     }
 
-    // TODO: Fix
-//    @Test
-//    public void whenPassedObjectFits_butIncorrectResponseReturns() {
-//        // given
-//        prepareMocksForTests(HttpStatus.UNAUTHORIZED.value());
-//
-//        // when
-//        Executable executableFunction = () -> dmaapPublisherTask.execute(Mono.just(listOfConsumerDmaapModel));
-//
-//        // then
-//        Assertions.assertThrows(DatafileTaskException.class, executableFunction, "Incorrect response from DMAAP");
-//        verify(dMaaPProducerReactiveHttpClient, times(1)).getDMaaPProducerResponse(any());
-//        verifyNoMoreInteractions(dMaaPProducerReactiveHttpClient);
-//    }
-
-
     private void prepareMocksForTests(Integer httpResponseCode) {
         dMaaPProducerReactiveHttpClient = mock(DMaaPProducerReactiveHttpClient.class);
         when(dMaaPProducerReactiveHttpClient.getDMaaPProducerResponse(any()))
-                .thenReturn(Mono.just("200"));
+                .thenReturn(Mono.just(httpResponseCode.toString()));
         when(appConfig.getDmaapPublisherConfiguration()).thenReturn(dmaapPublisherConfiguration);
         dmaapPublisherTask = spy(new DmaapPublisherTaskImpl(appConfig));
         when(dmaapPublisherTask.resolveConfiguration()).thenReturn(dmaapPublisherConfiguration);

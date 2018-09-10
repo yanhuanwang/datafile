@@ -46,10 +46,7 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
 
     private static final Logger logger = LoggerFactory.getLogger(FileCollector.class);
 
-    @Autowired
     private FtpsClient ftpsClient;
-
-    @Autowired
     private SftpClient sftpClient;
 
     @Autowired
