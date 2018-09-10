@@ -58,13 +58,13 @@ public class SftpClient { // TODO: Should be final but needs PowerMock to be abl
             sftpChannel.get(remoteFile, localFile);
             sftpChannel.exit();
             session.disconnect();
-            System.out.println("File " + FilenameUtils.getName(localFile) + " Download Successfull");
+            logger.debug("File " + FilenameUtils.getName(localFile) + " Download Successfull");
         } catch (JSchException e) {
             // TODO: Handle properly. Will be done as an improvement after first version committed.
-            logger.debug(e.toString());
+            logger.debug(e.getMessage());
         } catch (SftpException e) {
             // TODO: Handle properly. Will be done as an improvement after first version committed.
-            logger.debug(e.toString());
+            logger.debug(e.getMessage());
         }
     }
 }

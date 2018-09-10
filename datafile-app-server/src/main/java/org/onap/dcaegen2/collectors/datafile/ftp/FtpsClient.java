@@ -17,6 +17,7 @@
 package org.onap.dcaegen2.collectors.datafile.ftp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,53 +46,73 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock to be abl
             String localFile) {
         try {
             FTPSClient ftps = new FTPSClient("TLS");
-            ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
-            // try to connect
-            try {
-                ftps.connect(serverAddress, port);
-            } catch (Exception ex) {
-                // TODO: Handle properly. Will be done as an improvement after first version
-                // committed.
-                logger.debug(ex.toString());
-                return;
-            }
 
-            // login to server
+            boolean setUpSuccessful = setUpConnection(serverAddress, userId, password, port, ftps);
+
+            if (setUpSuccessful) {
+                getFile(remoteFile, localFile, ftps);
+
+                closeDownConnection(ftps);
+            }
+        } catch (IOException ex) {
+            // TODO: Handle properly. Will be done as an improvement after first version committed.
+            logger.debug(ex.getMessage());
+        }
+    }
+
+    private boolean setUpConnection(String serverAddress, String userId, String password, int port, FTPSClient ftps) {
+        boolean success = true;
+        ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
+
+        try {
+            ftps.connect(serverAddress, port);
+
             if (!ftps.login(userId, password)) {
                 ftps.logout();
                 logger.debug("Login Error");
-                return;
+                success = false;
             }
 
-            int reply = ftps.getReplyCode();
-            // FTPReply stores a set of constants for FTP reply codes.
-            if (!FTPReply.isPositiveCompletion(reply)) {
-                // TODO: Handle properly. Will be done as an improvement after first version
-                // committed.
-                ftps.disconnect();
-                logger.debug("Connection Error");
-                return;
+            if (success) {
+                int reply = ftps.getReplyCode();
+                // FTPReply stores a set of constants for FTP reply codes.
+                if (!FTPReply.isPositiveCompletion(reply)) {
+                    // TODO: Handle properly. Will be done as an improvement after first version
+                    // committed.
+                    ftps.disconnect();
+                    logger.debug("Connection Error: " + reply);
+                    success = false;
+                }
+                // enter passive mode
+                ftps.enterLocalPassiveMode();
             }
-            // enter passive mode
-            ftps.enterLocalPassiveMode();
-
-            // get output stream
-            OutputStream output;
-            File outfile = new File(localFile);
-            outfile.createNewFile();
-
-            output = new FileOutputStream(outfile);
-            // get the file from the remote system
-            ftps.retrieveFile(remoteFile, output);
-            // close output stream
-            output.close();
-            logger.debug("File " + outfile.getName() + " Download Successfull");
-
-            ftps.logout();
-            ftps.disconnect();
-        } catch (IOException ex) {
-            // TODO: Handle properly. Will be done as an improvement after first version committed.
-            logger.debug(ex.toString());
+        } catch (Exception ex) {
+            // TODO: Handle properly. Will be done as an improvement after first version
+            // committed.
+            logger.debug(ex.getMessage());
+            success = false;
         }
+
+        return success;
+    }
+
+    private void getFile(String remoteFile, String localFile, FTPSClient ftps)
+            throws IOException, FileNotFoundException {
+        // get output stream
+        OutputStream output;
+        File outfile = new File(localFile);
+        outfile.createNewFile();
+
+        output = new FileOutputStream(outfile);
+        // get the file from the remote system
+        ftps.retrieveFile(remoteFile, output);
+        // close output stream
+        output.close();
+        logger.debug("File " + outfile.getName() + " Download Successfull");
+    }
+
+    private void closeDownConnection(FTPSClient ftps) throws IOException {
+        ftps.logout();
+        ftps.disconnect();
     }
 }
