@@ -38,16 +38,16 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class FtpsClient { // TODO: Should be final but needs PowerMock to be able to mock then, so
-    // this will be done as an improvement after first version committed.
+public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockito 2.x to be able to
+                          // mock then, so this will be done as an improvement after first version
+                          // committed.
     private static final Logger logger = LoggerFactory.getLogger(FtpsClient.class);
 
-    public void collectFile(String serverAddress, String userId, String password, int port, String remoteFile,
-            String localFile) {
+    public void collectFile(FileServerData fileServerData, String remoteFile, String localFile) {
         try {
             FTPSClient ftps = new FTPSClient("TLS");
 
-            boolean setUpSuccessful = setUpConnection(serverAddress, userId, password, port, ftps);
+            boolean setUpSuccessful = setUpConnection(fileServerData, ftps);
 
             if (setUpSuccessful) {
                 getFile(remoteFile, localFile, ftps);
@@ -60,14 +60,14 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock to be abl
         }
     }
 
-    private boolean setUpConnection(String serverAddress, String userId, String password, int port, FTPSClient ftps) {
+    private boolean setUpConnection(FileServerData fileServerData, FTPSClient ftps) {
         boolean success = true;
         ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
 
         try {
-            ftps.connect(serverAddress, port);
+            ftps.connect(fileServerData.serverAddress(), fileServerData.port());
 
-            if (!ftps.login(userId, password)) {
+            if (!ftps.login(fileServerData.userId(), fileServerData.password())) {
                 ftps.logout();
                 logger.debug("Login Error");
                 success = false;

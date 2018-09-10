@@ -39,7 +39,8 @@ import reactor.core.publisher.Mono;
  *
  */
 @Component
-public class FileCollector { // TODO: Should be final, but that means adding PowerMock or Mockito 2.x for testing so it is left for later improvement.
+public class FileCollector { // TODO: Should be final, but that means adding PowerMock or Mockito
+                             // 2.x for testing so it is left for later improvement.
     private static final String FTPES = "ftpes";
     private static final String FTPS = "ftps";
     private static final String SFTP = "sftp";
@@ -69,26 +70,22 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     }
 
     private String collectFile(FileData fileData) {
-        String location = fileData.getLocation();
+        String location = fileData.location();
         URI uri = URI.create(location);
-        String serverAddress = uri.getHost();
         String[] userInfo = getUserNameAndPasswordIfGiven(uri.getUserInfo());
-        String userId = new String();
-        String password = new String();
-        if (userInfo != null) {
-            userId = userInfo[0];
-            password = userInfo[1];
-        }
-        int port = uri.getPort();
+        FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(uri.getHost())
+                .userId(userInfo != null ? userInfo[0] : "").password(userInfo != null ? userInfo[1] : "")
+                .port(uri.getPort()).build();
         String remoteFile = uri.getPath();
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
 
-        // TODO: Refactor for better error handling. Will be done as an improvement after first version committed.
+        // TODO: Refactor for better error handling. Will be done as an improvement after first
+        // version committed.
         if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
-            ftpsClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
+            ftpsClient.collectFile(fileServerData, remoteFile, localFile);
         } else if (SFTP.equals(scheme)) {
-            sftpClient.collectFile(serverAddress, userId, password, port, remoteFile, localFile);
+            sftpClient.collectFile(fileServerData, remoteFile, localFile);
         } else {
             logger.trace("DFC does not support protocol {}. Supported protocols are " + FTPES + ", " + FTPS + ", and "
                     + SFTP + ".", scheme);
@@ -106,9 +103,9 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     }
 
     private ConsumerDmaapModel getConsumerDmaapModel(FileData fileData, String localFile) {
-        String compression = fileData.getCompression();
-        String fileFormatType = fileData.getFileFormatType();
-        String fileFormatVersion = fileData.getFileFormatVersion();
+        String compression = fileData.compression();
+        String fileFormatType = fileData.fileFormatType();
+        String fileFormatVersion = fileData.fileFormatVersion();
 
         return ImmutableConsumerDmaapModel.builder().location(localFile).compression(compression)
                 .fileFormatType(fileFormatType).fileFormatVersion(fileFormatVersion).build();

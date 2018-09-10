@@ -39,6 +39,7 @@ import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.service.DmaapConsumerJsonParser;
 import org.onap.dcaegen2.collectors.datafile.service.FileData;
+import org.onap.dcaegen2.collectors.datafile.service.ImmutableFileData;
 import org.onap.dcaegen2.collectors.datafile.service.consumer.DmaapConsumerReactiveHttpClient;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage.AdditionalField;
@@ -97,8 +98,10 @@ class DmaapConsumerTaskImplTest {
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(ftpesAdditionalField).build();
         ftpesMessage = ftpesJsonMessage.toString();
-        ftpesFileDataAfterConsume.add(new FileData(PM_MEAS_CHANGE_IDINTIFIER, FILE_READY_CHANGE_TYPE, FTPES_LOCATION,
-                GZIP_COMPRESSION, MEAS_COLLECT_FILE_FORMAT_TYPE, FILE_FORMAT_VERSION));
+        FileData ftpesFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+                .changeType(FILE_READY_CHANGE_TYPE).location(FTPES_LOCATION).compression(GZIP_COMPRESSION)
+                .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        ftpesFileDataAfterConsume.add(ftpesFileData);
 
         AdditionalField sftpAdditionalField =
                 new JsonMessage.AdditionalFieldBuilder().location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
@@ -107,8 +110,10 @@ class DmaapConsumerTaskImplTest {
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(sftpAdditionalField).build();
         sftpMessage = sftpJsonMessage.toString();
-        sftpFileDataAfterConsume.add(new FileData(PM_MEAS_CHANGE_IDINTIFIER, FILE_READY_CHANGE_TYPE, SFTP_LOCATION,
-                GZIP_COMPRESSION, MEAS_COLLECT_FILE_FORMAT_TYPE, FILE_FORMAT_VERSION));
+        FileData sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+                .changeType(FILE_READY_CHANGE_TYPE).location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
+                .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+         sftpFileDataAfterConsume.add(sftpFileData);
 
 
         ImmutableConsumerDmaapModel consumerDmaapModel =
@@ -168,13 +173,13 @@ class DmaapConsumerTaskImplTest {
         when(dMaaPConsumerReactiveHttpClient.getDmaapConsumerResponse()).thenReturn(messageAsMono);
 
         if (!message.isEmpty()) {
-            when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono))
-                    .thenReturn(Mono.just(fileDataAfterConsume));
+            when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono)).thenReturn(Mono.just(fileDataAfterConsume));
         } else {
             when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono))
-            .thenReturn(Mono.error(new DmaapEmptyResponseException()));
+                    .thenReturn(Mono.error(new DmaapEmptyResponseException()));
         }
-        when(fileCollectorMock.getFilesFromSender(fileDataAfterConsume)).thenReturn(Mono.just(listOfConsumerDmaapModel));
+        when(fileCollectorMock.getFilesFromSender(fileDataAfterConsume))
+                .thenReturn(Mono.just(listOfConsumerDmaapModel));
 
         dmaapConsumerTask = spy(new DmaapConsumerTaskImpl(appConfig, dMaaPConsumerReactiveHttpClient,
                 dmaapConsumerJsonParserMock, fileCollectorMock));

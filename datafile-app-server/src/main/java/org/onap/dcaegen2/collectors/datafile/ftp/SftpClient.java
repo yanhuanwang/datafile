@@ -41,15 +41,15 @@ public class SftpClient { // TODO: Should be final but needs PowerMock to be abl
                           // this will be done as an improvement after first version committed.
     private static final Logger logger = LoggerFactory.getLogger(SftpClient.class);
 
-    public void collectFile(String host, String username, String password, int port, String remoteFile,
+    public void collectFile(FileServerData fileServerData, String remoteFile,
             String localFile) {
         JSch jsch = new JSch(); // TODO: Might be changed to use Spring as an improvement after
                                 // first version committed.
         Session session = null;
         try {
-            session = jsch.getSession(username, host, port);
+            session = jsch.getSession(fileServerData.userId(), fileServerData.serverAddress(), fileServerData.port());
             session.setConfig("StrictHostKeyChecking", "no");
-            session.setPassword(password);
+            session.setPassword(fileServerData.password());
             session.connect();
 
             Channel channel = session.openChannel("sftp");

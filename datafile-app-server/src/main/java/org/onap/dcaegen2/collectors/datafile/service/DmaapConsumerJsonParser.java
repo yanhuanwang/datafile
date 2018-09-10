@@ -2,17 +2,15 @@
  * ============LICENSE_START======================================================================
  * Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
  * ===============================================================================================
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  * ============LICENSE_END========================================================================
  */
 
@@ -98,18 +96,23 @@ public class DmaapConsumerJsonParser {
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfAdditionalFields != null) {
-                Mono<ArrayList<FileData>> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
+                Mono<ArrayList<FileData>> res =
+                        getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
                 return res;
             }
 
             if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
-                return Mono.error(new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
+                return Mono.error(
+                        new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
             } else if (arrayOfAdditionalFields != null) {
-                return Mono.error(new DmaapNotFoundException("FileReady event arrayOfAdditionalFields is missing. " + jsonObject));
+                return Mono.error(new DmaapNotFoundException(
+                        "FileReady event arrayOfAdditionalFields is missing. " + jsonObject));
             }
-            return Mono.error(new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
+            return Mono.error(
+                    new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
         }
-        return Mono.error(new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject));
+        return Mono.error(
+                new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject));
 
     }
 
@@ -125,8 +128,9 @@ public class DmaapConsumerJsonParser {
                 String compression = getValueFromJson(fileInfo, COMPRESSION);
                 if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
                         && isLocationAndCompressionNotEmpty(location, compression)) {
-                    res.add(new FileData(changeIdentifier, changeType, location, compression, fileFormatType,
-                            fileFormatVersion));
+                    res.add(ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
+                            .location(location).compression(compression).fileFormatType(fileFormatType)
+                            .fileFormatVersion(fileFormatVersion).build());
                 } else {
                     return Mono.error(new DmaapNotFoundException(
                             "FileReady event does not contain correct file format information. " + fileInfo));

@@ -54,7 +54,9 @@ public class SftpClientTest {
         SftpClient sftpClient = new SftpClient();
         sftpServer.putFile(REMOTE_DUMMY_FILE, DUMMY_CONTENT, UTF_8);
         byte[] file = downloadFile(sftpServer, REMOTE_DUMMY_FILE);
-        sftpClient.collectFile("127.0.0.1", USERNAME, PASSWORD, sftpServer.getPort(), REMOTE_DUMMY_FILE,
+        FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress("127.0.0.1")
+                .userId(USERNAME).password(PASSWORD).port(sftpServer.getPort()).build();
+        sftpClient.collectFile(expectedFileServerData, REMOTE_DUMMY_FILE,
                 LOCAL_DUMMY_FILE);
         byte[] localFile = Files.readAllBytes(new File(LOCAL_DUMMY_FILE).toPath());
         assertThat(new String(file, UTF_8)).isEqualTo(DUMMY_CONTENT);

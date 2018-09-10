@@ -18,82 +18,20 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
-import java.util.Objects;
+import org.immutables.value.Value;
 
 /**
  * Contains data, from the fileReady event, about the file to collect from the xNF.
  *
- * TODO: Might be changed to Immutable  as an improvement after first version committed.
- *
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  *
  */
-public class FileData {
-    protected String changeIdentifier;
-    protected String changeType;
-    protected String location;
-    protected String compression;
-    protected String fileFormatType;
-    protected String fileFormatVersion;
-
-    public FileData(String changeIdentifier, String changeType, String location, String compression,
-            String fileFormatType, String fileFormatVersion) {
-        this.changeIdentifier = changeIdentifier;
-        this.changeType = changeType;
-        this.location = location;
-        this.compression = compression;
-        this.fileFormatType = fileFormatType;
-        this.fileFormatVersion = fileFormatVersion;
-    }
-
-    public String getCompression() {
-        return compression;
-    }
-
-    public String getFileFormatType() {
-        return fileFormatType;
-    }
-
-    public String getFileFormatVersion() {
-        return fileFormatVersion;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        FileData fileData = (FileData) obj;
-        // field comparison
-        return Objects.equals(changeIdentifier, fileData.changeIdentifier)
-                && Objects.equals(changeType, fileData.changeType) && Objects.equals(location, fileData.location)
-                && Objects.equals(compression, fileData.compression)
-                && Objects.equals(fileFormatType, fileData.fileFormatType)
-                && Objects.equals(fileFormatVersion, fileData.fileFormatVersion);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(changeIdentifier, changeType, location, compression, fileFormatType, fileFormatVersion);
-    }
-
-    @Override
-    public String toString() {
-        return "FileData [changeIdentifier=" + changeIdentifier + ", changeType=" + changeType + ", location="
-                + location + ", compression=" + compression + ", fileFormatType=" + fileFormatType
-                + ", fileFormatVersion=" + fileFormatVersion + "]";
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-
+@Value.Immutable
+public interface FileData {
+    public String changeIdentifier();
+    public String changeType();
+    public String location();
+    public String compression();
+    public String fileFormatType();
+    public String fileFormatVersion();
 }
