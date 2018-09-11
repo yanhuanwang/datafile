@@ -61,8 +61,8 @@ class DmaapPublisherTaskImplTest {
     public static void setUp() {
         dmaapPublisherConfiguration =
                 new ImmutableDmaapPublisherConfiguration.Builder().dmaapContentType("application/json")
-                        .dmaapHostName("54.45.33.2").dmaapPortNumber(1234).dmaapProtocol("https").dmaapUserName("PRH")
-                        .dmaapUserPassword("PRH").dmaapTopicName("unauthenticated.SEC_OTHER_OUTPUT").build();
+                        .dmaapHostName("54.45.33.2").dmaapPortNumber(1234).dmaapProtocol("https").dmaapUserName("DFC")
+                        .dmaapUserPassword("DFC").dmaapTopicName("unauthenticated.VES_NOTIFICATION_OUTPUT").build();
         consumerDmaapModel = ImmutableConsumerDmaapModel.builder().location("target/A20161224.1030-1045.bin.gz")
                 .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
         listOfConsumerDmaapModel = new ArrayList<ConsumerDmaapModel>();

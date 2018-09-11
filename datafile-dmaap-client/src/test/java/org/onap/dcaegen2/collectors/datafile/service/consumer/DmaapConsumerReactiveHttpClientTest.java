@@ -63,7 +63,7 @@ class DmaapConsumerReactiveHttpClientTest {
         when(consumerConfigurationMock.dmaapUserName()).thenReturn("DATAFILE");
         when(consumerConfigurationMock.dmaapUserPassword()).thenReturn("DATFILE");
         when(consumerConfigurationMock.dmaapContentType()).thenReturn("application/json");
-        when(consumerConfigurationMock.dmaapTopicName()).thenReturn("unauthenticated.NOTIFICATIONS");
+        when(consumerConfigurationMock.dmaapTopicName()).thenReturn("unauthenticated.VES_NOTIFICATION_OUTPUT");
         when(consumerConfigurationMock.consumerGroup()).thenReturn("OpenDCAE-c12");
         when(consumerConfigurationMock.consumerId()).thenReturn("c12");
 
