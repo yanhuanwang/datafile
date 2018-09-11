@@ -81,7 +81,7 @@ public class FileCollectorTest {
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
         FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).build();
+                .userId("").password("").port(PORT_22).ftpKeyPath("").trustedCAPath("").build();
         verify(ftpsClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
 
         verifyNoMoreInteractions(ftpsClientMock);
@@ -105,7 +105,7 @@ public class FileCollectorTest {
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
         FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).build();
+                .userId("").password("").port(PORT_22).ftpKeyPath("").trustedCAPath("").build();
         verify(sftpClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
         verifyNoMoreInteractions(ftpsClientMock);
     }

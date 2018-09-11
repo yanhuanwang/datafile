@@ -113,8 +113,7 @@ class DatafileAppConfigTest {
                 datafileAppConfig.getDmaapPublisherConfiguration());
         Assertions.assertEquals(appConfig.getDmaapConsumerConfiguration(),
                 datafileAppConfig.getDmaapConsumerConfiguration());
-        Assertions.assertEquals(appConfig.getFtpesConfiguration(),
-                datafileAppConfig.getFtpesConfiguration());
+        Assertions.assertEquals(appConfig.getFtpesConfiguration(), datafileAppConfig.getFtpesConfiguration());
 
     }
 

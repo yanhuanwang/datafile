@@ -4,12 +4,12 @@
 			"dmaapConsumerConfiguration": {
 				"dmaapHostName": "localhost",
 				"dmaapPortNumber": 2222,
-				"dmaapTopicName": "/events/unauthenticated.FILE_READY",
+				"dmaapTopicName": "/events/unauthenticated.VES_NOTIFICATION_OUTPUT",
 				"dmaapProtocol": "http",
 				"dmaapUserName": "admin",
 				"dmaapUserPassword": "admin",
 				"dmaapContentType": "application/json",
-				"consumerId": "c12",
+				"consumerId": "C12",
 				"consumerGroup": "OpenDcae-c12",
 				"timeoutMS": -1,
 				"messageLimit": 1

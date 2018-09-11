@@ -49,25 +49,39 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
 
     private final FtpsClient ftpsClient;
     private final SftpClient sftpClient;
-    private final String keyCert;
-    private final String trustedCA;
+    private String keyCertPath;
+    private String trustedCAPath;
 
     @Autowired
     protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient) {
         this.ftpsClient = ftpsClient;
         this.sftpClient = sftpClient;
-        this.keyCert = "";
-        this.trustedCA = "";
+        this.keyCertPath = "";
+        this.trustedCAPath = "";
     }
 
     protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient, String keyCert, String trustedCA) {
         this.ftpsClient = ftpsClient;
         this.sftpClient = sftpClient;
-        this.keyCert = keyCert;
-        this.trustedCA = trustedCA;
+        this.keyCertPath = keyCert;
+        this.trustedCAPath = trustedCA;
     }
 
+    public String getKeyCertPath() {
+        return keyCertPath;
+    }
 
+    public void setKeyCertPath(String keyCertPath) {
+        this.keyCertPath = keyCertPath;
+    }
+
+    public String getTrustedCAPath() {
+        return trustedCAPath;
+    }
+
+    public void setTrustedCAPath(String trustedCAPath) {
+        this.trustedCAPath = trustedCAPath;
+    }
 
     public Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
         ArrayList<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
@@ -89,7 +103,7 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         String[] userInfo = getUserNameAndPasswordIfGiven(uri.getUserInfo());
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(uri.getHost())
                 .userId(userInfo != null ? userInfo[0] : "").password(userInfo != null ? userInfo[1] : "")
-                .port(uri.getPort()).build();
+                .port(uri.getPort()).ftpKeyPath(this.getKeyCertPath()).trustedCAPath(this.getTrustedCAPath()).build();
         String remoteFile = uri.getPath();
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
