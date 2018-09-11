@@ -47,4 +47,13 @@ public abstract class FtpesConfig implements Serializable {
     @Value.Parameter
     public abstract String trustedCA();
 
+    /**
+     *
+     */
+    public FtpesConfig() {
+//        super();
+        // TODO Auto-generated constructor stub
+    }
+
+
 }
