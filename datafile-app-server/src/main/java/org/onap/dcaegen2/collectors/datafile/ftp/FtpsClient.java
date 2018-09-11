@@ -21,13 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-
-import javax.net.ssl.KeyManager;
 
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
-import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +34,7 @@ import org.springframework.stereotype.Component;
  *
  * TODO: Refactor for better test and error handling.
  *
+ * @author <a href="mailto:martin.c.yan@est.tech">Martin Yan</a>
  *
  */
 @Component
@@ -67,28 +64,9 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         boolean success = true;
         ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
 
-        //keymanager
-        String keystorePath="/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
-        String keystorePass="secret";
-        KeyManager keyManager = null;
-        try {
-            keyManager = KeyManagerUtils.createClientKeyManager(new File(keystorePath), keystorePass);
-        } catch (GeneralSecurityException | IOException e) {
-            logger.debug(e.getMessage());
-        }
-        ftps.setKeyManager(keyManager);
-
-        //trustmanager
-//        String keystorePath="/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
-//        String keystorePass="secret";
-//        TrustManager trustManager = null;
-//        trustManager = TrustManagerUtils.getValidateServerCertificateTrustManager();
-//        ftps.setTrustManager(trustManager);
-
         try {
             ftps.connect(fileServerData.serverAddress(), fileServerData.port());
-            ftps.execPBSZ(0);
-            ftps.execPROT("P");
+
             if (!ftps.login(fileServerData.userId(), fileServerData.password())) {
                 ftps.logout();
                 logger.debug("Login Error");
