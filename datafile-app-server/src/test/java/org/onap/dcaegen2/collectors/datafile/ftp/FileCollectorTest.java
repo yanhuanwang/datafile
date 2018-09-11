@@ -56,12 +56,7 @@ public class FileCollectorTest {
 
     private SftpClient sftpClientMock = mock(SftpClient.class);
 
-    private String keyCert = "";
-
-    private String trustedCA = "";
-
-    private FileCollector fileCollectorUndetTest =
-            new FileCollector(ftpsClientMock, sftpClientMock, keyCert, trustedCA);
+    private FileCollector fileCollectorUndetTest = new FileCollector(ftpsClientMock, sftpClientMock);;
 
     @Test
     public void whenSingleFtpesFile_returnCorrectResponse() {
@@ -83,7 +78,6 @@ public class FileCollectorTest {
         FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
                 .userId("").password("").port(PORT_22).build();
         verify(ftpsClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
-
         verifyNoMoreInteractions(ftpsClientMock);
     }
 
