@@ -58,10 +58,12 @@ public class FileCollectorTest {
 
     private String keyCert = "";
 
+    private String keyCertPassword = "";
+
     private String trustedCA = "";
 
     private FileCollector fileCollectorUndetTest =
-            new FileCollector(ftpsClientMock, sftpClientMock, keyCert, trustedCA);
+            new FileCollector(ftpsClientMock, sftpClientMock, keyCert, keyCertPassword, trustedCA);
 
     @Test
     public void whenSingleFtpesFile_returnCorrectResponse() {
@@ -81,7 +83,7 @@ public class FileCollectorTest {
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
         FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).ftpKeyPath("").trustedCAPath("").build();
+                .userId("").password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").build();
         verify(ftpsClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
 
         verifyNoMoreInteractions(ftpsClientMock);
@@ -105,7 +107,7 @@ public class FileCollectorTest {
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
         FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).ftpKeyPath("").trustedCAPath("").build();
+                .userId("").password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").build();
         verify(sftpClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
         verifyNoMoreInteractions(ftpsClientMock);
     }

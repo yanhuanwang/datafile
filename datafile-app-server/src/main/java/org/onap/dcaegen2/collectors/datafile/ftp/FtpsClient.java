@@ -67,10 +67,9 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         boolean success = true;
         ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
 
-        //keymanager
-//        String keystorePath="config/ftpKey.jks";
-        String keystorePath=fileServerData.ftpKeyPath();
-        String keystorePass="secret";
+        // keymanager
+        String keystorePath = fileServerData.ftpKeyPath();
+        String keystorePass = fileServerData.ftpKeyPassword();
         KeyManager keyManager = null;
         try {
             keyManager = KeyManagerUtils.createClientKeyManager(new File(keystorePath), keystorePass);
@@ -79,12 +78,12 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         }
         ftps.setKeyManager(keyManager);
 
-        //trustmanager
-//        String keystorePath="/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
-//        String keystorePass="secret";
-//        TrustManager trustManager = null;
-//        trustManager = TrustManagerUtils.getValidateServerCertificateTrustManager();
-//        ftps.setTrustManager(trustManager);
+        // trustmanager
+        // String keystorePath="/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
+        // String keystorePass="secret";
+        // TrustManager trustManager = null;
+        // trustManager = TrustManagerUtils.getValidateServerCertificateTrustManager();
+        // ftps.setTrustManager(trustManager);
 
         try {
             ftps.connect(fileServerData.serverAddress(), fileServerData.port());

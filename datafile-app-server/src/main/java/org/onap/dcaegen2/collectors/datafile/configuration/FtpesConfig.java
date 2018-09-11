@@ -42,6 +42,9 @@ public abstract class FtpesConfig implements Serializable {
     public abstract String keyCert();
 
     @Value.Parameter
+    public abstract String keyPassword();
+
+    @Value.Parameter
     public abstract String trustedCA();
 
 }

@@ -93,7 +93,10 @@ public class AppConfig extends DatafileAppConfig {
 
     @Value("${ftp.ftpesConfiguration.keyCert:}")
     public String keyCert;
-
+    
+    @Value("${ftp.ftpesConfiguration.keyPassword:}")
+    public String keyPassword;
+    
     @Value("${ftp.ftpesConfiguration.trustedCA:}")
     public String trustedCA;
 
@@ -166,6 +169,9 @@ public class AppConfig extends DatafileAppConfig {
             .keyCert(
                 Optional.ofNullable(keyCert).filter(p -> !p.isEmpty())
                     .orElse(ftpesConfig.keyCert()))
+            .keyPassword(
+                    Optional.ofNullable(keyPassword).filter(p -> !p.isEmpty())
+                        .orElse(ftpesConfig.keyPassword()))
             .trustedCA(
                 Optional.ofNullable(trustedCA).filter(p -> !p.isEmpty())
                     .orElse(ftpesConfig.trustedCA()))

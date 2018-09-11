@@ -27,6 +27,7 @@
 		"ftp": {
 			"ftpesConfiguration": {
 				"keyCert": "config/ftpKey.jks",
+				"keyPassword": "secret",
 				"trustedCA": "config/ftpKey.jks"
 			}
 		}

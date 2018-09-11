@@ -28,6 +28,7 @@ public interface FileServerData {
     public String userId();
     public String password();
     public String ftpKeyPath();
+    public String ftpKeyPassword();
     public String trustedCAPath();
     public int port();
 }
