@@ -50,11 +50,12 @@ class DatafileAppConfigTest {
     private static final String DATAFILE_ENDPOINTS = "datafile_endpoints.json";
     private static final String JSON_STRING =
             "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
-                    + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2222,"
-                    + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\","
-                    + "\"dmaapUserPassword\":\"admin\",\"messageLimit\":1000,\"timeoutMS\":1000},\"dmaapProducerConfiguration\":"
-                    + "{\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,"
-                    + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\"}}}}";
+                    + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\","
+                    + "\"dmaapPortNumber\":2222,\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\","
+                    + "\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\",\"messageLimit\":1000,"
+                    + "\"timeoutMS\":1000},\"dmaapProducerConfiguration\":{\"dmaapContentType\":\"application/json\","
+                    + "\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,\"dmaapProtocol\":\"http\","
+                    + "\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\"}}}}";
     private static final String INCORRECT_JSON_STRING =
             "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
                     + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\","

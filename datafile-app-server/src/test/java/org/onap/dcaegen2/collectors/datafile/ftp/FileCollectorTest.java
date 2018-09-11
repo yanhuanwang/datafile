@@ -56,7 +56,7 @@ public class FileCollectorTest {
 
     private SftpClient sftpClientMock = mock(SftpClient.class);
 
-    private FileCollector fileCollectorUndetTest = new FileCollector(ftpsClientMock, sftpClientMock);;
+    private FileCollector fileCollectorUndetTest = new FileCollector(ftpsClientMock, sftpClientMock);
 
     @Test
     public void whenSingleFtpesFile_returnCorrectResponse() {

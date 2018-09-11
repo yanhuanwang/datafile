@@ -23,10 +23,10 @@ public class ConsumerDmaapModelTest {
 
     // Given
     private ConsumerDmaapModel consumerDmaapModel;
-    private final static String LOCATION = "target/A20161224.1030-1045.bin.gz";
-    private final static String COMPRESSION = "gzip";
-    private final static String FILE_FORMAT_TYPE = "org.3GPP.32.435#measCollec";
-    private final static String FILE_FORMAT_VERSION = "V10";
+    private static final String LOCATION = "target/A20161224.1030-1045.bin.gz";
+    private static final String COMPRESSION = "gzip";
+    private static final String FILE_FORMAT_TYPE = "org.3GPP.32.435#measCollec";
+    private static final String FILE_FORMAT_VERSION = "V10";
 
     @Test
     public void consumerDmaapModelBuilder_shouldBuildAnObject() {

@@ -72,7 +72,7 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     private Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
         Mono<ArrayList<ConsumerDmaapModel>> filesFromSender = fileCollector.getFilesFromSender(listOfFileData);
         return filesFromSender;
-            // TODO: Refactor for better error handling.
+        // TODO: Refactor for better error handling.
     }
 
     @Override

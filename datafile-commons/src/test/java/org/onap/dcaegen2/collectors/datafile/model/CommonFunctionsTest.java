@@ -37,9 +37,9 @@ class CommonFunctionsTest {
             "{\"location\":\"target/A20161224.1030-1045.bin.gz\",\"compression\":\"gzip\","
                     + "\"fileFormatType\":\"org.3GPP.32.435#measCollec\",\"fileFormatVersion\":\"V10\"}";
 
-    final static HttpResponse httpResponseMock = mock(HttpResponse.class);
-    final static HttpEntity httpEntityMock = mock(HttpEntity.class);
-    final static StatusLine statusLineMock = mock(StatusLine.class);
+    private static final HttpResponse httpResponseMock = mock(HttpResponse.class);
+    private static final HttpEntity httpEntityMock = mock(HttpEntity.class);
+    private static final StatusLine statusLineMock = mock(StatusLine.class);
 
     @BeforeAll
     static void setup() {

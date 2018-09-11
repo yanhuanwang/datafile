@@ -61,8 +61,8 @@ public class SchedulerConfig extends DatafileAppConfig {
     public synchronized Mono<ResponseEntity<String>> getResponseFromCancellationOfTasks() {
         scheduledFutureList.forEach(x -> x.cancel(false));
         scheduledFutureList.clear();
-        return Mono.defer(
-                () -> Mono.just(new ResponseEntity<>("Datafile Service has already been stopped!", HttpStatus.CREATED)));
+        return Mono.defer(() -> Mono
+                .just(new ResponseEntity<>("Datafile Service has already been stopped!", HttpStatus.CREATED)));
     }
 
     /**
