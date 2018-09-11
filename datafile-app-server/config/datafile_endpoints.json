@@ -26,8 +26,8 @@
 		},
 		"ftp": {
 			"ftpesConfiguration": {
-				"keyCert": "config/dfc-keystore.jks",
-				"trustedCA": "config/dfc-keystore.jks"
+				"keyCert": "config/ftpKey.jks",
+				"trustedCA": "config/ftpKey.jks"
 			}
 		}
 	}
