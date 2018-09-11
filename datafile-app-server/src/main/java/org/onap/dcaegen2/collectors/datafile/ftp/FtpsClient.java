@@ -17,13 +17,16 @@
 package org.onap.dcaegen2.collectors.datafile.ftp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
@@ -65,7 +68,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
 
     private boolean setUpConnection(FileServerData fileServerData, FTPSClient ftps) {
         boolean success = true;
-        ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
+        ftps.setNeedClientAuth(true);
 
         // keymanager
         String keystorePath = fileServerData.ftpKeyPath();
@@ -79,11 +82,21 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         ftps.setKeyManager(keyManager);
 
         // trustmanager
-        // String keystorePath="/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
-        // String keystorePass="secret";
-        // TrustManager trustManager = null;
-        // trustManager = TrustManagerUtils.getValidateServerCertificateTrustManager();
-        // ftps.setTrustManager(trustManager);
+        String trustedCAPath = "/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
+        String trustedCAPass = "secret";
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            FileInputStream fis = new FileInputStream(trustedCAPath);
+            ks.load(fis, trustedCAPass.toCharArray());
+            fis.close();
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("JKS");
+            tmf.init(ks);
+            ftps.setTrustManager(tmf.getTrustManagers()[0]);
+            ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
+
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+        }
 
         try {
             ftps.connect(fileServerData.serverAddress(), fileServerData.port());
