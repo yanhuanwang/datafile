@@ -22,6 +22,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.stefanbirkner.fakesftpserver.rule.FakeSftpServerRule;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,13 +36,6 @@ import java.nio.file.Files;
 
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.github.stefanbirkner.fakesftpserver.rule.FakeSftpServerRule;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 
 public class SftpClientTest {
     private static final String USERNAME = "bob";

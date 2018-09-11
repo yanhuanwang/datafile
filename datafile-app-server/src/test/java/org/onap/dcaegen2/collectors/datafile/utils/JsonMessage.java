@@ -39,6 +39,10 @@ public class JsonMessage {
         return "[" + getParsed() + "]";
     }
 
+    /**
+     * Gets the message in parsed format.
+     * @return the massage in parsed format.
+     */
     public String getParsed() {
         StringBuffer additionalFieldsString = new StringBuffer();
         if (arrayOfAdditionalFields.size() > 0) {
@@ -182,7 +186,7 @@ public class JsonMessage {
      * Can be used to produce a correct test Json message. Tip! Check the formatting with
      * <a href="https://jsonformatter.org/">Json fomatter</a>
      *
-     * @param args
+     * @param args Not used
      */
     public static void main(String[] args) {
         AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()

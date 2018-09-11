@@ -25,6 +25,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,10 +38,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.onap.dcaegen2.collectors.datafile.IT.junit5.mockito.MockitoExtension;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import org.onap.dcaegen2.collectors.datafile.integration.junit5.mockito.MockitoExtension;
 
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 4/9/18
@@ -57,11 +57,14 @@ class DatafileAppConfigTest {
                     + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\"}}}}";
     private static final String INCORRECT_JSON_STRING =
             "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
-                    + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2222,"
-                    + "\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\","
-                    + "\"messageLimit\":1000,\"timeoutMS\":1000},\"dmaapProducerConfiguration\":{\"dmaapContentType\":\"application/json\","
-                    + "\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,\"dmaapProtocol\":\"http\",\"dmaaptopicName\":\"temp\","
-                    + "\"dmaapuserName\":\"admin\",\"dmaapuserPassword\":\"admin\"}}}}";
+                    + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\","
+                    + "\"dmaapPortNumber\":2222,\"dmaapProtocol\":\"http\",\"dmaapTopicName\":\"temp\","
+                    + "\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\",\"messageLimit\":1000,"
+                    + "\"timeoutMS\":1000},\"dmaapProducerConfiguration\":{\"dmaapContentType\":\"application/json\","
+                    + "\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,\"dmaapProtocol\":\"http\","
+                    + "\"FAULTY_PARAMETER_NAME\":\"temp\","
+                    + "\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\"}}}}";
+
     private static DatafileAppConfig datafileAppConfig;
     private static AppConfig appConfig;
 
@@ -110,7 +113,7 @@ class DatafileAppConfigTest {
     }
 
     @Test
-    public void whenFileIsNotExist_ThrowIOException() {
+    public void whenFileIsNotExist_ThrowIoException() {
         // Given
         filePath = "/temp.json";
         datafileAppConfig.setFilepath(filePath);

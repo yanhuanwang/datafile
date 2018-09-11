@@ -16,7 +16,7 @@
  * ============LICENSE_END========================================================================
  */
 
-package org.onap.dcaegen2.collectors.datafile.IT.junit5.mockito;
+package org.onap.dcaegen2.collectors.datafile.integration.junit5.mockito;
 
 import static org.mockito.Mockito.mock;
 

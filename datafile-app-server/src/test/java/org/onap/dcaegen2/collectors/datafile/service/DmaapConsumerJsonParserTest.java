@@ -18,6 +18,9 @@ package org.onap.dcaegen2.collectors.datafile.service;
 
 import static org.mockito.Mockito.spy;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -27,9 +30,6 @@ import org.mockito.Mockito;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage.AdditionalField;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;

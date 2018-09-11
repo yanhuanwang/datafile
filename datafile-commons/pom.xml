@@ -22,14 +22,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
+    <groupId>org.onap.dcaegen2.collectors</groupId>
     <artifactId>datafile</artifactId>
-    <groupId>org.onap.dcaegen2.services</groupId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>datafile-commons</artifactId>
   <groupId>org.onap.dcaegen2.collectors.datafile</groupId>
-  <version>1.0.0-SNAPSHOT</version>
+  <artifactId>datafile-commons</artifactId>
   <packaging>jar</packaging>
 
   <properties>

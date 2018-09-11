@@ -72,7 +72,7 @@ class DmaapConsumerTaskImplTest {
     private static AppConfig appConfig;
     private static DmaapConsumerConfiguration dmaapConsumerConfiguration;
     private DmaapConsumerTaskImpl dmaapConsumerTask;
-    private DmaapConsumerReactiveHttpClient dMaaPConsumerReactiveHttpClient;
+    private DmaapConsumerReactiveHttpClient dmaapConsumerReactiveHttpClient;
 
     private static FileCollector fileCollectorMock;
 
@@ -113,7 +113,7 @@ class DmaapConsumerTaskImplTest {
         FileData sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-         sftpFileDataAfterConsume.add(sftpFileData);
+        sftpFileDataAfterConsume.add(sftpFileData);
 
 
         ImmutableConsumerDmaapModel consumerDmaapModel =
@@ -133,7 +133,7 @@ class DmaapConsumerTaskImplTest {
         StepVerifier.create(dmaapConsumerTask.execute("Sample input")).expectSubscription()
                 .expectError(DmaapEmptyResponseException.class).verify();
 
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
+        verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
     }
 
     @Test
@@ -141,10 +141,10 @@ class DmaapConsumerTaskImplTest {
         // given
         prepareMocksForDmaapConsumer(ftpesMessage, ftpesFileDataAfterConsume);
         // when
-        ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
+        final ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
-        verifyNoMoreInteractions(dMaaPConsumerReactiveHttpClient);
+        verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
+        verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
         verify(fileCollectorMock, times(1)).getFilesFromSender(ftpesFileDataAfterConsume);
         verifyNoMoreInteractions(fileCollectorMock);
         Assertions.assertEquals(listOfConsumerDmaapModel, arrayOfResponse);
@@ -156,10 +156,10 @@ class DmaapConsumerTaskImplTest {
         // given
         prepareMocksForDmaapConsumer(sftpMessage, sftpFileDataAfterConsume);
         // when
-        ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
+        final ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
-        verify(dMaaPConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
-        verifyNoMoreInteractions(dMaaPConsumerReactiveHttpClient);
+        verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
+        verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
         verify(fileCollectorMock, times(1)).getFilesFromSender(sftpFileDataAfterConsume);
         verifyNoMoreInteractions(fileCollectorMock);
         Assertions.assertEquals(listOfConsumerDmaapModel, arrayOfResponse);
@@ -169,8 +169,8 @@ class DmaapConsumerTaskImplTest {
     private void prepareMocksForDmaapConsumer(String message, ArrayList<FileData> fileDataAfterConsume) {
         Mono<String> messageAsMono = Mono.just(message);
         DmaapConsumerJsonParser dmaapConsumerJsonParserMock = mock(DmaapConsumerJsonParser.class);
-        dMaaPConsumerReactiveHttpClient = mock(DmaapConsumerReactiveHttpClient.class);
-        when(dMaaPConsumerReactiveHttpClient.getDmaapConsumerResponse()).thenReturn(messageAsMono);
+        dmaapConsumerReactiveHttpClient = mock(DmaapConsumerReactiveHttpClient.class);
+        when(dmaapConsumerReactiveHttpClient.getDmaapConsumerResponse()).thenReturn(messageAsMono);
 
         if (!message.isEmpty()) {
             when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono)).thenReturn(Mono.just(fileDataAfterConsume));
@@ -181,9 +181,9 @@ class DmaapConsumerTaskImplTest {
         when(fileCollectorMock.getFilesFromSender(fileDataAfterConsume))
                 .thenReturn(Mono.just(listOfConsumerDmaapModel));
 
-        dmaapConsumerTask = spy(new DmaapConsumerTaskImpl(appConfig, dMaaPConsumerReactiveHttpClient,
+        dmaapConsumerTask = spy(new DmaapConsumerTaskImpl(appConfig, dmaapConsumerReactiveHttpClient,
                 dmaapConsumerJsonParserMock, fileCollectorMock));
         when(dmaapConsumerTask.resolveConfiguration()).thenReturn(dmaapConsumerConfiguration);
-        doReturn(dMaaPConsumerReactiveHttpClient).when(dmaapConsumerTask).resolveClient();
+        doReturn(dmaapConsumerReactiveHttpClient).when(dmaapConsumerTask).resolveClient();
     }
 }
