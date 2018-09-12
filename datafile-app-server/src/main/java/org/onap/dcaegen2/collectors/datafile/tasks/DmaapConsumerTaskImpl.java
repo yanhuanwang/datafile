@@ -87,6 +87,10 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     @Override
     void initConfigs() {
         datafileAppConfig.initFileStreamReader();
+        fileCollector.setKeyCertPath(datafileAppConfig.getFtpesConfiguration().keyCert());
+        fileCollector.setKeyCertPassword(datafileAppConfig.getFtpesConfiguration().keyPassword());
+        fileCollector.setTrustedCAPath(datafileAppConfig.getFtpesConfiguration().trustedCA());
+        fileCollector.setTrustedCAPassword(datafileAppConfig.getFtpesConfiguration().trustedCAPassword());
     }
 
     @Override

@@ -50,10 +50,61 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     private final FtpsClient ftpsClient;
     private final SftpClient sftpClient;
 
+    private String keyCertPath;
+    private String keyCertPassword;
+    private String trustedCAPath;
+    private String trustedCAPassword;
+
     @Autowired
     protected FileCollector(FtpsClient ftpsCleint, SftpClient sftpClient) {
         this.ftpsClient = ftpsCleint;
         this.sftpClient = sftpClient;
+        this.keyCertPath = "";
+        this.keyCertPassword = "";
+        this.trustedCAPath = "";
+        this.trustedCAPassword = "";
+    }
+
+    protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient, String keyCert, String keyCertPassword,
+            String trustedCA, String trustedCAPassword) {
+        this.ftpsClient = ftpsClient;
+        this.sftpClient = sftpClient;
+        this.keyCertPath = keyCert;
+        this.keyCertPassword = keyCertPassword;
+        this.trustedCAPath = trustedCA;
+        this.trustedCAPassword = trustedCAPassword;
+    }
+
+    public String getKeyCertPath() {
+        return keyCertPath;
+    }
+
+    public void setKeyCertPath(String keyCertPath) {
+        this.keyCertPath = keyCertPath;
+    }
+
+    public String getKeyCertPassword() {
+        return keyCertPassword;
+    }
+
+    public void setKeyCertPassword(String keyCertPassword) {
+        this.keyCertPassword = keyCertPassword;
+    }
+
+    public String getTrustedCAPath() {
+        return trustedCAPath;
+    }
+
+    public void setTrustedCAPath(String trustedCAPath) {
+        this.trustedCAPath = trustedCAPath;
+    }
+
+    public String getTrustedCAPassword() {
+        return trustedCAPassword;
+    }
+
+    public void setTrustedCAPassword(String trustedCAPassword) {
+        this.trustedCAPassword = trustedCAPassword;
     }
 
     public Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
@@ -75,7 +126,8 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         String[] userInfo = getUserNameAndPasswordIfGiven(uri.getUserInfo());
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(uri.getHost())
                 .userId(userInfo != null ? userInfo[0] : "").password(userInfo != null ? userInfo[1] : "")
-                .port(uri.getPort()).build();
+                .port(uri.getPort()).ftpKeyPath(this.getKeyCertPath()).ftpKeyPassword(this.getKeyCertPassword())
+                .trustedCAPath(this.getTrustedCAPath()).trustedCAPassword(this.getTrustedCAPassword()).build();
         String remoteFile = uri.getPath();
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
