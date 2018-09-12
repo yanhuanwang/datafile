@@ -6,9 +6,9 @@
                 "consumerId": "1",
                 "dmaapContentType": "application/json",
                 "dmaapHostName": "localhost",
-                "dmaapPortNumber": 2222,
+                "dmaapPortNumber": 3904,
                 "dmaapProtocol": "http",
-                "dmaapTopicName": "/events/fileReady",
+                "dmaapTopicName": "/events/unauthenticated.VES_NOTIFICATION_OUTPUT",
                 "dmaapUserName": "admin",
                 "dmaapUserPassword": "admin",
                 "messageLimit": 1000,
@@ -17,9 +17,9 @@
             "dmaapProducerConfiguration": {
                 "dmaapContentType": "application/octet-stream",
                 "dmaapHostName": "localhost",
-                "dmaapPortNumber": 2223,
+                "dmaapPortNumber": 3905,
                 "dmaapProtocol": "http",
-                "dmaapTopicName": "/events/fileReady",
+                "dmaapTopicName": "/events/unauthenticated.VES_NOTIFICATION_OUTPUT",
                 "dmaapUserName": "admin",
                 "dmaapUserPassword": "admin"
             }

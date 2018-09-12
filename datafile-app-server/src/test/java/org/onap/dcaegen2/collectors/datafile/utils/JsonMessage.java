@@ -47,8 +47,8 @@ public class JsonMessage {
         StringBuffer additionalFieldsString = new StringBuffer();
         if (arrayOfAdditionalFields.size() > 0) {
             additionalFieldsString.append("\"arrayOfAdditionalFields\": [");
-            for (Iterator iterator = arrayOfAdditionalFields.iterator(); iterator.hasNext();) {
-                AdditionalField additionalField = (AdditionalField) iterator.next();
+            for (Iterator<AdditionalField> iterator = arrayOfAdditionalFields.iterator(); iterator.hasNext();) {
+                AdditionalField additionalField = iterator.next();
                 additionalFieldsString.append(additionalField.toString());
                 if (iterator.hasNext()) {
                     additionalFieldsString.append(",");
