@@ -90,6 +90,7 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
         fileCollector.setKeyCertPath(datafileAppConfig.getFtpesConfiguration().keyCert());
         fileCollector.setKeyCertPassword(datafileAppConfig.getFtpesConfiguration().keyPassword());
         fileCollector.setTrustedCAPath(datafileAppConfig.getFtpesConfiguration().trustedCA());
+        fileCollector.setTrustedCAPassword(datafileAppConfig.getFtpesConfiguration().trustedCAPassword());
     }
 
     @Override

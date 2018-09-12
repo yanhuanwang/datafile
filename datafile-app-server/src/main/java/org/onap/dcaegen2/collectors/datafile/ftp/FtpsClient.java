@@ -31,7 +31,6 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
-import org.apache.commons.net.util.TrustManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -82,8 +81,8 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         ftps.setKeyManager(keyManager);
 
         // trustmanager
-        String trustedCAPath = "/Users/chengkaiyan/TLS/java/dfc2-keystore.jks";
-        String trustedCAPass = "secret";
+        String trustedCAPath = fileServerData.trustedCAPath();
+        String trustedCAPass = fileServerData.trustedCAPassword();
         try {
             KeyStore ks = KeyStore.getInstance("JKS");
             FileInputStream fis = new FileInputStream(trustedCAPath);
@@ -92,7 +91,6 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("JKS");
             tmf.init(ks);
             ftps.setTrustManager(tmf.getTrustManagers()[0]);
-            ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
 
         } catch (Exception e) {
             logger.debug(e.getMessage());

@@ -57,7 +57,7 @@ class DatafileAppConfigTest {
             + ",\"dmaapPortNumber\": 2223,\"dmaapTopicName\":\"/events/unauthenticated.FILE_READY\","
             + "\"dmaapProtocol\":\"http\",\"dmaapUserName\":\"admin\",\"dmaapUserPassword\":\"admin\","
             + "\"dmaapContentType\":\"application/octet-stream\"}},\"ftp\":{\"ftpesConfiguration\":{"
-            + "\"keyCert\":\"config/ftpKey.jks\",\"keyPassword\": \"secret\",\"trustedCA\":\"config/ftpKey.jks\"}}}}";
+            + "\"keyCert\":\"config/ftpKey.jks\",\"keyPassword\": \"secret\",\"trustedCA\":\"config/ftpKey.jks\",\"trustedCAPassword\": \"config/ftpKey.jks\"}}}}";
     private static final String INCORRECT_JSON_STRING =
             "{\"configs\":{\"dmaap\":{\"dmaapConsumerConfiguration\":{\"consumerGroup\":\"other\",\"consumerId\":\"1\","
                     + "\"dmaapContentType\":\"application/json\",\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2222,"
@@ -66,7 +66,7 @@ class DatafileAppConfigTest {
                     + "\"dmaapHostName\":\"localhost\",\"dmaapPortNumber\":2223,\"dmaapProtocol\":\"http\",\"dmaaptopicName\":\"temp\","
                     + "\"dmaapuserName\":\"admin\",\"dmaapuserPassword\":\"admin\"}},\"ftp\": {"
                     + "\"ftpesConfiguration\": {\"keyCert\": \"config/ftpKey.jks\","
-                    + "\"keyPassword\": \"secret\",\"trustedCA\": \"config/ftpKey.jks\"}}}}";
+                    + "\"keyPassword\": \"secret\",\"trustedCA\": \"config/ftpKey.jks\",\"trustedCAPassword\": \"config/ftpKey.jks\"}}}}";
     private static DatafileAppConfig datafileAppConfig;
     private static AppConfig appConfig;
 

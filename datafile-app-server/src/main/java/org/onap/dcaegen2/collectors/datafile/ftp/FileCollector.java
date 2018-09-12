@@ -52,6 +52,7 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     private String keyCertPath;
     private String keyCertPassword;
     private String trustedCAPath;
+    private String trustedCAPassword;
 
     @Autowired
     protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient) {
@@ -60,15 +61,17 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         this.keyCertPath = "";
         this.keyCertPassword = "";
         this.trustedCAPath = "";
+        this.trustedCAPassword = "";
     }
 
     protected FileCollector(FtpsClient ftpsClient, SftpClient sftpClient, String keyCert, String keyCertPassword,
-            String trustedCA) {
+            String trustedCA, String trustedCAPassword) {
         this.ftpsClient = ftpsClient;
         this.sftpClient = sftpClient;
         this.keyCertPath = keyCert;
         this.keyCertPassword = keyCertPassword;
         this.trustedCAPath = trustedCA;
+        this.trustedCAPassword = trustedCAPassword;
     }
 
     public String getKeyCertPath() {
@@ -95,6 +98,14 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         this.trustedCAPath = trustedCAPath;
     }
 
+    public String getTrustedCAPassword() {
+        return trustedCAPassword;
+    }
+
+    public void setTrustedCAPassword(String trustedCAPassword) {
+        this.trustedCAPassword = trustedCAPassword;
+    }
+
     public Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
         ArrayList<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
         for (FileData fileData : listOfFileData) {
@@ -116,7 +127,7 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(uri.getHost())
                 .userId(userInfo != null ? userInfo[0] : "").password(userInfo != null ? userInfo[1] : "")
                 .port(uri.getPort()).ftpKeyPath(this.getKeyCertPath()).ftpKeyPassword(this.getKeyCertPassword())
-                .trustedCAPath(this.getTrustedCAPath()).build();
+                .trustedCAPath(this.getTrustedCAPath()).trustedCAPassword(this.getTrustedCAPassword()).build();
         String remoteFile = uri.getPath();
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();

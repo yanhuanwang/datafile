@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@Value.Immutable(prehash = true)
+@Value.Immutable
 @Value.Style(builder = "new")
 @Gson.TypeAdapters
 public abstract class FtpesConfig implements Serializable {
@@ -47,13 +47,6 @@ public abstract class FtpesConfig implements Serializable {
     @Value.Parameter
     public abstract String trustedCA();
 
-    /**
-     *
-     */
-    public FtpesConfig() {
-//        super();
-        // TODO Auto-generated constructor stub
-    }
-
-
+    @Value.Parameter
+    public abstract String trustedCAPassword();
 }

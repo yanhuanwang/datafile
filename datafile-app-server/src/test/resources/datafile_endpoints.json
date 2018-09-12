@@ -28,7 +28,8 @@
             "ftpesConfiguration": {
                 "keyCert": "config/dfc-keystore.jks",
                 "keyPassword": "secret",
-                "trustedCA": "config/dfc-keystore.jks"
+                "trustedCA": "config/dfc-keystore.jks",
+                "trustedCAPassword": "secret"
             }
         }
     }

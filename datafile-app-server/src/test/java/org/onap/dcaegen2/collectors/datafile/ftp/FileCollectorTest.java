@@ -62,8 +62,10 @@ public class FileCollectorTest {
 
     private String trustedCA = "";
 
+    private String trustedCAPassword = "";
+
     private FileCollector fileCollectorUndetTest =
-            new FileCollector(ftpsClientMock, sftpClientMock, keyCert, keyCertPassword, trustedCA);
+            new FileCollector(ftpsClientMock, sftpClientMock, keyCert, keyCertPassword, trustedCA, trustedCAPassword);
 
     @Test
     public void whenSingleFtpesFile_returnCorrectResponse() {
@@ -82,8 +84,9 @@ public class FileCollectorTest {
         assertEquals(MEAS_COLLECT_FILE_FORMAT_TYPE, consumerDmaapModel.getFileFormatType());
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
-        FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").build();
+        FileServerData expectedFileServerData =
+                ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).userId("").password("").port(PORT_22)
+                        .ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").trustedCAPassword("").build();
         verify(ftpsClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
 
         verifyNoMoreInteractions(ftpsClientMock);
@@ -106,8 +109,9 @@ public class FileCollectorTest {
         assertEquals(MEAS_COLLECT_FILE_FORMAT_TYPE, consumerDmaapModel.getFileFormatType());
         assertEquals(FILE_FORMAT_VERSION, consumerDmaapModel.getFileFormatVersion());
         assertEquals(LOCAL_FILE_LOCATION, consumerDmaapModel.getLocation());
-        FileServerData expectedFileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS)
-                .userId("").password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").build();
+        FileServerData expectedFileServerData =
+                ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).userId("").password("").port(PORT_22)
+                        .ftpKeyPath("").ftpKeyPassword("").trustedCAPath("").trustedCAPassword("").build();
         verify(sftpClientMock, times(1)).collectFile(expectedFileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION);
         verifyNoMoreInteractions(ftpsClientMock);
     }

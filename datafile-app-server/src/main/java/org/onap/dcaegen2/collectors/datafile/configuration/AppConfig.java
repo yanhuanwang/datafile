@@ -93,12 +93,15 @@ public class AppConfig extends DatafileAppConfig {
 
     @Value("${ftp.ftpesConfiguration.keyCert:}")
     public String keyCert;
-    
+
     @Value("${ftp.ftpesConfiguration.keyPassword:}")
     public String keyPassword;
-    
+
     @Value("${ftp.ftpesConfiguration.trustedCA:}")
     public String trustedCA;
+
+    @Value("${ftp.ftpesConfiguration.trustedCAPassword:}")
+    public String trustedCAPassword;
 
     @Override
     public DmaapConsumerConfiguration getDmaapConsumerConfiguration() {
@@ -174,6 +177,9 @@ public class AppConfig extends DatafileAppConfig {
                         .orElse(ftpesConfig.keyPassword()))
             .trustedCA(
                 Optional.ofNullable(trustedCA).filter(p -> !p.isEmpty())
+                    .orElse(ftpesConfig.trustedCA()))
+            .trustedCAPassword(
+                Optional.ofNullable(trustedCAPassword).filter(p -> !p.isEmpty())
                     .orElse(ftpesConfig.trustedCA()))
             .build();
     }
