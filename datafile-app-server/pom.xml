@@ -2,7 +2,7 @@
 <!--
   ~ ============LICENSE_START=======================================================
   ~ Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
-  ~ ================================================================================
+  ~ ================================================================================ 
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -66,18 +66,23 @@
             <tag>latest</tag>
           </imageTags>
           <baseImage>openjdk:8-jre-alpine</baseImage>
+          <entryPoint>["java", "-jar", "/opt/${project.fatJar.finalName}.jar"]</entryPoint>
           <resources>
             <resource>
-              <directory>${project.build.directory}</directory>
-              <include>${project.artifactId}.jar</include>
               <targetPath>/opt</targetPath>
+              <directory>${project.build.directory}</directory>
+              <include>${project.fatJar.finalName}.jar</include>
+            </resource>
+            <resource>
+              <targetPath>/config</targetPath>
+              <directory>${project.basedir}/config</directory>
+              <include>*</include>
             </resource>
           </resources>
           <exposes>
             <expose>8100</expose>
             <expose>8433</expose>
           </exposes>
-          <cmd>["java", "-jar", "/opt/${project.artifactId}.jar"]</cmd>
         </configuration>
         <executions>
           <execution>
@@ -167,8 +172,9 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.github.stefanbirkner</groupId>
-      <artifactId>fake-sftp-server-rule</artifactId>
+      <groupId>org.onap.dcaegen2.collectors.datafile</groupId>
+      <artifactId>datafile-dmaap-client</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <!--TESTS DEPENDENCIES -->
@@ -190,6 +196,7 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-launcher</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -209,15 +216,16 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.onap.dcaegen2.collectors.datafile</groupId>
-      <artifactId>datafile-dmaap-client</artifactId>
-      <version>${project.parent.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockftpserver</groupId>
       <artifactId>MockFtpServer</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>fake-sftp-server-rule</artifactId>
       <scope>test</scope>
     </dependency>
 

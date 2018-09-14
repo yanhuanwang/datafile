@@ -29,6 +29,7 @@ import com.google.gson.JsonParser;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +96,7 @@ class DmaapProducerReactiveHttpClientTest {
         // when
         mockWebClientDependantObject();
         dmaapProducerReactiveHttpClient.createDmaapWebClient(webClientMock);
-        ArrayList<ConsumerDmaapModel> consumerDmaapModelList = new ArrayList<ConsumerDmaapModel>();
+        List<ConsumerDmaapModel> consumerDmaapModelList = new ArrayList<ConsumerDmaapModel>();
         consumerDmaapModelList.add(consumerDmaapModel);
 
         dmaapProducerReactiveHttpClient.getDmaapProducerResponse(Mono.just(consumerDmaapModelList));

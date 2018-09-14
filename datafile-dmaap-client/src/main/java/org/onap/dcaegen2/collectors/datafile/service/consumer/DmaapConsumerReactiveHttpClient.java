@@ -78,7 +78,7 @@ public class DmaapConsumerReactiveHttpClient {
                     Mono.error(new Exception("HTTP 500")))
                 .bodyToMono(String.class);
         } catch (URISyntaxException e) {
-            logger.warn("Exception while evaluating URI ");
+            logger.error("Unable to parse URI in message from xNF.", e);
             return Mono.error(e);
         }
     }

@@ -18,7 +18,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
@@ -37,7 +37,7 @@ import reactor.core.publisher.Mono;
  */
 abstract class DmaapConsumerTask {
 
-    abstract Mono<ArrayList<FileData>> consume(Mono<String> message) throws DmaapNotFoundException;
+    abstract Mono<List<FileData>> consume(Mono<String> message) throws DmaapNotFoundException;
 
     abstract DmaapConsumerReactiveHttpClient resolveClient();
 
@@ -45,7 +45,7 @@ abstract class DmaapConsumerTask {
 
     protected abstract DmaapConsumerConfiguration resolveConfiguration();
 
-    protected abstract Mono<ArrayList<ConsumerDmaapModel>> execute(String object) throws DatafileTaskException;
+    protected abstract Mono<List<ConsumerDmaapModel>> execute(String object) throws DatafileTaskException;
 
     WebClient buildWebClient() {
         return new DmaapReactiveWebClient().fromConfiguration(resolveConfiguration()).build();

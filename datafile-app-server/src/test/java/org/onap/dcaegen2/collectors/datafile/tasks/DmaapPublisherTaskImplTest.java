@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,7 +52,7 @@ import reactor.core.publisher.Mono;
 class DmaapPublisherTaskImplTest {
 
     private static ConsumerDmaapModel consumerDmaapModel;
-    private static ArrayList<ConsumerDmaapModel> listOfConsumerDmaapModel;
+    private static List<ConsumerDmaapModel> listOfConsumerDmaapModel;
     private static DmaapPublisherTaskImpl dmaapPublisherTask;
     private static DmaapProducerReactiveHttpClient dMaaPProducerReactiveHttpClient;
     private static AppConfig appConfig;

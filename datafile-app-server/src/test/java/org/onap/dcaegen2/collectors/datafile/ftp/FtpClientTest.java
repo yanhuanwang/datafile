@@ -36,12 +36,10 @@ public class FtpClientTest {
 
     private FakeFtpServer fakeFtpServer;
 
-    // TODO: Add useful tests.
-
     @BeforeAll
     protected void setUp() throws Exception {
         fakeFtpServer = new FakeFtpServer();
-        fakeFtpServer.setServerControlPort(PORT); // use any free port
+        fakeFtpServer.setServerControlPort(PORT);
 
         FileSystem fileSystem = new UnixFakeFileSystem();
         fileSystem.add(new FileEntry(FILE, CONTENTS));

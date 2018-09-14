@@ -21,8 +21,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
@@ -60,15 +62,19 @@ public class FileCollectorTest {
 
     @Test
     public void whenSingleFtpesFile_returnCorrectResponse() {
-        ArrayList<FileData> listOfFileData = new ArrayList<FileData>();
+        List<FileData> listOfFileData = new ArrayList<FileData>();
         listOfFileData.add(ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).location(FTPES_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build());
 
-        Mono<ArrayList<ConsumerDmaapModel>> consumerModelsMono =
+        FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).port(PORT_22)
+                .userId("").password("").build();
+        when(ftpsClientMock.collectFile(fileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION)).thenReturn(true);
+
+        Mono<List<ConsumerDmaapModel>> consumerModelsMono =
                 fileCollectorUndetTest.getFilesFromSender(listOfFileData);
 
-        ArrayList<ConsumerDmaapModel> consumerModels = consumerModelsMono.block();
+        List<ConsumerDmaapModel> consumerModels = consumerModelsMono.block();
         assertEquals(1, consumerModels.size());
         ConsumerDmaapModel consumerDmaapModel = consumerModels.get(0);
         assertEquals(GZIP_COMPRESSION, consumerDmaapModel.getCompression());
@@ -83,15 +89,19 @@ public class FileCollectorTest {
 
     @Test
     public void whenSingleSftpFile_returnCorrectResponse() {
-        ArrayList<FileData> listOfFileData = new ArrayList<FileData>();
+        List<FileData> listOfFileData = new ArrayList<FileData>();
         listOfFileData.add(ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build());
 
-        Mono<ArrayList<ConsumerDmaapModel>> consumerModelsMono =
+        FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).port(PORT_22)
+                .userId("").password("").build();
+        when(sftpClientMock.collectFile(fileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION)).thenReturn(true);
+
+        Mono<List<ConsumerDmaapModel>> consumerModelsMono =
                 fileCollectorUndetTest.getFilesFromSender(listOfFileData);
 
-        ArrayList<ConsumerDmaapModel> consumerModels = consumerModelsMono.block();
+        List<ConsumerDmaapModel> consumerModels = consumerModelsMono.block();
         assertEquals(1, consumerModels.size());
         ConsumerDmaapModel consumerDmaapModel = consumerModels.get(0);
         assertEquals(GZIP_COMPRESSION, consumerDmaapModel.getCompression());

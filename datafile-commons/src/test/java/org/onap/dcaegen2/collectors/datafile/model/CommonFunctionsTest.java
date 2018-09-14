@@ -20,12 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -50,21 +46,5 @@ class CommonFunctionsTest {
     @Test
     void createJsonBody_shouldReturnJsonInString() {
         assertEquals(EXPECTED_RESULT, CommonFunctions.createJsonBody(model));
-    }
-
-    @Test
-    void handleResponse_shouldReturn200() throws IOException {
-        // When
-        when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(HttpStatus.SC_OK);
-        // Then
-        assertEquals(Optional.of(HttpStatus.SC_OK), CommonFunctions.handleResponse(httpResponseMock));
-    }
-
-    @Test
-    void handleResponse_shouldReturn300() throws IOException {
-        // When
-        when(httpResponseMock.getStatusLine().getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
-        // Then
-        assertEquals(Optional.of(HttpStatus.SC_BAD_REQUEST), CommonFunctions.handleResponse(httpResponseMock));
     }
 }

@@ -16,10 +16,13 @@
 
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
@@ -31,12 +34,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Mono;
 
@@ -78,11 +79,9 @@ public class DmaapProducerReactiveHttpClient {
      * @param consumerDmaapModelMono - object which will be sent to DMaaP
      * @return status code of operation
      */
-    public Mono<String> getDmaapProducerResponse(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModelMono) {
-        consumerDmaapModelMono.subscribe(
-                models -> postFilesAndData(models));
-        // TODO: Add better error handling.
-        return Mono.just("200");
+    public Mono<String> getDmaapProducerResponse(Mono<List<ConsumerDmaapModel>> consumerDmaapModelMono) {
+        consumerDmaapModelMono.subscribe(models -> postFilesAndData(models));
+        return Mono.just(HttpStatus.OK.toString());
     }
 
     public DmaapProducerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
@@ -90,7 +89,7 @@ public class DmaapProducerReactiveHttpClient {
         return this;
     }
 
-    private void postFilesAndData(ArrayList<ConsumerDmaapModel> models) {
+    private void postFilesAndData(List<ConsumerDmaapModel> models) {
         for (ConsumerDmaapModel consumerDmaapModel : models) {
             postFileAndData(consumerDmaapModel);
         }
@@ -99,30 +98,36 @@ public class DmaapProducerReactiveHttpClient {
     private void postFileAndData(ConsumerDmaapModel model) {
         RequestBodyUriSpec post = webClient.post();
 
-        prepareHead(model, post);
+        boolean headPrepared = prepareHead(model, post);
 
-        prepareBody(model, post);
+        if (headPrepared) {
+            prepareBody(model, post);
 
-        ResponseSpec responseSpec = post.retrieve();
-        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> Mono.error(new Exception("HTTP 400"))); // TODO: Handle better.
-        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.error(new Exception("HTTP 500"))); // TODO: Handle better.
-        String bodyToMono = responseSpec.bodyToMono(String.class).block();
-     // TODO: Handle other responses from DataRouter
+            ResponseSpec responseSpec = post.retrieve();
+            responseSpec.onStatus(HttpStatus::is4xxClientError,
+                    clientResponse -> handlePostErrors(model, clientResponse));
+            responseSpec.onStatus(HttpStatus::is5xxServerError,
+                    clientResponse -> handlePostErrors(model, clientResponse));
+            String bodyToMono = responseSpec.bodyToMono(String.class).block();
+        }
     }
 
-    private void prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
-        post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
-
-        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
-        metaData.getAsJsonObject().remove(LOCATION);
-        post.header(X_ATT_DR_META, metaData.toString());
-
+    private boolean prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
+        boolean result = true;
         try {
+            post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
+
+            JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
+            metaData.getAsJsonObject().remove(LOCATION);
+            post.header(X_ATT_DR_META, metaData.toString());
+
             post.uri(getUri());
-        } catch (URISyntaxException e) {
-            logger.warn("Exception while evaluating URI");
-            // TODO: Add better error handling.
+        } catch (Exception e) {
+            logger.error("Unable to post file to Data Router. " + model, e);
+            result = false;
         }
+
+        return result;
     }
 
     private void prepareBody(ConsumerDmaapModel model, RequestBodyUriSpec post) {
@@ -132,8 +137,15 @@ public class DmaapProducerReactiveHttpClient {
         post.body(BodyInserters.fromResource(httpResource));
     }
 
-    URI getUri() throws URISyntaxException {
+    private URI getUri() throws URISyntaxException {
         return new URIBuilder().setScheme(dmaapProtocol).setHost(dmaapHostName).setPort(dmaapPortNumber)
                 .setPath(dmaapTopicName).build();
+    }
+
+    private Mono<Exception> handlePostErrors(ConsumerDmaapModel model, ClientResponse clientResponse) {
+        String errorMessage = "Unable to post file to Data Router. " + model + "Reason: " + clientResponse.toString();
+        logger.error(errorMessage);
+
+        return Mono.error(new Exception(errorMessage));
     }
 }

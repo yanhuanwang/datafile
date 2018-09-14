@@ -16,7 +16,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
 import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
@@ -64,22 +64,21 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     }
 
     @Override
-    Mono<ArrayList<FileData>> consume(Mono<String> message) {
+    Mono<List<FileData>> consume(Mono<String> message) {
         logger.trace("Method called with arg {}", message);
         return dmaapConsumerJsonParser.getJsonObject(message);
     }
 
-    private Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
-        Mono<ArrayList<ConsumerDmaapModel>> filesFromSender = fileCollector.getFilesFromSender(listOfFileData);
+    private Mono<List<ConsumerDmaapModel>> getFilesFromSender(List<FileData> listOfFileData) {
+        Mono<List<ConsumerDmaapModel>> filesFromSender = fileCollector.getFilesFromSender(listOfFileData);
         return filesFromSender;
-        // TODO: Refactor for better error handling.
     }
 
     @Override
-    protected Mono<ArrayList<ConsumerDmaapModel>> execute(String object) {
+    protected Mono<List<ConsumerDmaapModel>> execute(String object) {
         dmaaPConsumerReactiveHttpClient = resolveClient();
         logger.trace("Method called with arg {}", object);
-        Mono<ArrayList<FileData>> consumerResult =
+        Mono<List<FileData>> consumerResult =
                 consume((dmaaPConsumerReactiveHttpClient.getDmaapConsumerResponse()));
         return consumerResult.flatMap(this::getFilesFromSender);
     }

@@ -16,7 +16,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
@@ -33,13 +33,13 @@ import reactor.core.publisher.Mono;
  */
 abstract class DmaapPublisherTask {
 
-    abstract Mono<String> publish(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModel) throws DatafileTaskException;
+    abstract Mono<String> publish(Mono<List<ConsumerDmaapModel>> consumerDmaapModel) throws DatafileTaskException;
 
     abstract DmaapProducerReactiveHttpClient resolveClient();
 
     protected abstract DmaapPublisherConfiguration resolveConfiguration();
 
-    protected abstract Mono<String> execute(Mono<ArrayList<ConsumerDmaapModel>> consumerDmaapModel)
+    protected abstract Mono<String> execute(Mono<List<ConsumerDmaapModel>> consumerDmaapModel)
             throws DatafileTaskException;
 
     WebClient buildWebClient() {

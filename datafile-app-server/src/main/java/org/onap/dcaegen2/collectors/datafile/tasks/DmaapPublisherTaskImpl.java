@@ -16,7 +16,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
@@ -49,21 +49,21 @@ public class DmaapPublisherTaskImpl extends DmaapPublisherTask {
     }
 
     @Override
-    public Mono<String> publish(Mono<ArrayList<ConsumerDmaapModel>> listOfonsumerDmaapModel)
+    public Mono<String> publish(Mono<List<ConsumerDmaapModel>> consumerDmaapModels)
             throws DatafileTaskException {
-        logger.info("Publishing on DMaaP DataRouter {}", listOfonsumerDmaapModel);
-        return dmaapProducerReactiveHttpClient.getDmaapProducerResponse(listOfonsumerDmaapModel);
+        logger.info("Publishing on DMaaP DataRouter {}", consumerDmaapModels);
+        return dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModels);
     }
 
     @Override
-    public Mono<String> execute(Mono<ArrayList<ConsumerDmaapModel>> listOfonsumerDmaapModel)
+    public Mono<String> execute(Mono<List<ConsumerDmaapModel>> consumerDmaapModels)
             throws DatafileTaskException {
-        if (listOfonsumerDmaapModel == null) {
+        if (consumerDmaapModels == null) {
             throw new DmaapNotFoundException("Invoked null object to DMaaP task");
         }
         dmaapProducerReactiveHttpClient = resolveClient();
-        logger.trace("Method called with arg {}", listOfonsumerDmaapModel);
-        return publish(listOfonsumerDmaapModel);
+        logger.trace("Method called with arg {}", consumerDmaapModels);
+        return publish(consumerDmaapModels);
     }
 
     @Override

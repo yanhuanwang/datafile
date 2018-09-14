@@ -16,18 +16,19 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapEmptyResponseException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
 import org.springframework.util.StringUtils;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Mono;
 
@@ -57,7 +58,7 @@ public class DmaapConsumerJsonParser {
      * @param monoMessage - results from DMaaP
      * @return reactive Mono with an array of FileData
      */
-    public Mono<ArrayList<FileData>> getJsonObject(Mono<String> monoMessage) {
+    public Mono<List<FileData>> getJsonObject(Mono<String> monoMessage) {
         return monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
     }
 
@@ -66,12 +67,12 @@ public class DmaapConsumerJsonParser {
                 : Mono.fromSupplier(() -> new JsonParser().parse(message));
     }
 
-    private Mono<ArrayList<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
+    private Mono<List<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
         return jsonElement.isJsonObject() ? create(Mono.fromSupplier(jsonElement::getAsJsonObject))
                 : getFileDataFromJsonArray(jsonElement);
     }
 
-    private Mono<ArrayList<FileData>> getFileDataFromJsonArray(JsonElement jsonElement) {
+    private Mono<List<FileData>> getFileDataFromJsonArray(JsonElement jsonElement) {
         return create(Mono.fromCallable(() -> StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
                 .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
     }
@@ -80,13 +81,13 @@ public class DmaapConsumerJsonParser {
         return Optional.of(new JsonParser().parse(element.getAsString()).getAsJsonObject());
     }
 
-    private Mono<ArrayList<FileData>> create(Mono<JsonObject> jsonObject) {
+    private Mono<List<FileData>> create(Mono<JsonObject> jsonObject) {
         return jsonObject.flatMap(monoJsonP -> !containsHeader(monoJsonP)
                 ? Mono.error(new DmaapNotFoundException("Incorrect JsonObject - missing header"))
                 : transform(monoJsonP));
     }
 
-    private Mono<ArrayList<FileData>> transform(JsonObject jsonObject) {
+    private Mono<List<FileData>> transform(JsonObject jsonObject) {
         if (containsHeader(jsonObject, EVENT, NOTIFICATION_FIELDS)) {
             JsonObject notificationFields = jsonObject.getAsJsonObject(EVENT).getAsJsonObject(NOTIFICATION_FIELDS);
             String changeIdentifier = getValueFromJson(notificationFields, CHANGE_IDENTIFIER);
@@ -96,7 +97,7 @@ public class DmaapConsumerJsonParser {
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfAdditionalFields != null) {
-                Mono<ArrayList<FileData>> res =
+                Mono<List<FileData>> res =
                         getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
                 return res;
             }
@@ -116,9 +117,9 @@ public class DmaapConsumerJsonParser {
 
     }
 
-    private Mono<ArrayList<FileData>> getFileDataFromJson(String changeIdentifier, String changeType,
+    private Mono<List<FileData>> getFileDataFromJson(String changeIdentifier, String changeType,
             JsonArray arrayOfAdditionalFields) {
-        ArrayList<FileData> res = new ArrayList<>();
+        List<FileData> res = new ArrayList<>();
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
             if (arrayOfAdditionalFields.get(i) != null) {
                 JsonObject fileInfo = (JsonObject) arrayOfAdditionalFields.get(i);

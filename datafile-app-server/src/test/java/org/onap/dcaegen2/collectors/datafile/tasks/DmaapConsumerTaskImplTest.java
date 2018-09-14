@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,7 +68,7 @@ class DmaapConsumerTaskImplTest {
     private static final String MEAS_COLLECT_FILE_FORMAT_TYPE = "org.3GPP.32.435#measCollec";
     private static final String FILE_FORMAT_VERSION = "V10";
 
-    private static ArrayList<ConsumerDmaapModel> listOfConsumerDmaapModel = new ArrayList<ConsumerDmaapModel>();
+    private static List<ConsumerDmaapModel> listOfConsumerDmaapModel = new ArrayList<ConsumerDmaapModel>();
 
     private static AppConfig appConfig;
     private static DmaapConsumerConfiguration dmaapConsumerConfiguration;
@@ -77,10 +78,10 @@ class DmaapConsumerTaskImplTest {
     private static FileCollector fileCollectorMock;
 
     private static String ftpesMessage;
-    private static ArrayList<FileData> ftpesFileDataAfterConsume = new ArrayList<FileData>();
+    private static List<FileData> ftpesFileDataAfterConsume = new ArrayList<FileData>();
 
     private static String sftpMessage;
-    private static ArrayList<FileData> sftpFileDataAfterConsume = new ArrayList<FileData>();
+    private static List<FileData> sftpFileDataAfterConsume = new ArrayList<FileData>();
 
     @BeforeAll
     public static void setUp() {
@@ -141,7 +142,7 @@ class DmaapConsumerTaskImplTest {
         // given
         prepareMocksForDmaapConsumer(ftpesMessage, ftpesFileDataAfterConsume);
         // when
-        final ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
+        final List<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
         verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
@@ -156,7 +157,7 @@ class DmaapConsumerTaskImplTest {
         // given
         prepareMocksForDmaapConsumer(sftpMessage, sftpFileDataAfterConsume);
         // when
-        final ArrayList<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
+        final List<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
         // then
         verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
@@ -166,7 +167,7 @@ class DmaapConsumerTaskImplTest {
 
     }
 
-    private void prepareMocksForDmaapConsumer(String message, ArrayList<FileData> fileDataAfterConsume) {
+    private void prepareMocksForDmaapConsumer(String message, List<FileData> fileDataAfterConsume) {
         Mono<String> messageAsMono = Mono.just(message);
         DmaapConsumerJsonParser dmaapConsumerJsonParserMock = mock(DmaapConsumerJsonParser.class);
         dmaapConsumerReactiveHttpClient = mock(DmaapConsumerReactiveHttpClient.class);

@@ -22,6 +22,7 @@ package org.onap.dcaegen2.collectors.datafile.ftp;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
@@ -56,8 +57,8 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         this.sftpClient = sftpClient;
     }
 
-    public Mono<ArrayList<ConsumerDmaapModel>> getFilesFromSender(ArrayList<FileData> listOfFileData) {
-        ArrayList<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
+    public Mono<List<ConsumerDmaapModel>> getFilesFromSender(List<FileData> listOfFileData) {
+        List<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
         for (FileData fileData : listOfFileData) {
             String localFile = collectFile(fileData);
 
@@ -80,15 +81,18 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         String localFile = "target/" + FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
 
-        // TODO: Refactor for better error handling. Will be done as an improvement after first
-        // version committed.
+        boolean fileDownloaded = false;
         if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
-            ftpsClient.collectFile(fileServerData, remoteFile, localFile);
+            fileDownloaded = ftpsClient.collectFile(fileServerData, remoteFile, localFile);
         } else if (SFTP.equals(scheme)) {
-            sftpClient.collectFile(fileServerData, remoteFile, localFile);
+            fileDownloaded = sftpClient.collectFile(fileServerData, remoteFile, localFile);
         } else {
-            logger.trace("DFC does not support protocol {}. Supported protocols are " + FTPES + ", " + FTPS + ", and "
-                    + SFTP + ".", scheme);
+
+            logger.error("DFC does not support protocol {}. Supported protocols are " + FTPES + ", " + FTPS + ", and "
+                    + SFTP + ". " + fileData);
+            localFile = null;
+        }
+        if (!fileDownloaded) {
             localFile = null;
         }
         return localFile;
