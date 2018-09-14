@@ -66,19 +66,24 @@
             <tag>latest</tag>
           </imageTags>
           <baseImage>openjdk:8-jre-alpine</baseImage>
+          <entryPoint>["java", "-jar", "/opt/${project.fatJar.finalName}.jar"]</entryPoint>
           <resources>
             <resource>
-              <directory>${project.build.directory}</directory>
-              <include>${project.artifactId}.jar</include>
               <targetPath>/opt</targetPath>
+              <directory>${project.build.directory}</directory>
+              <include>${project.fatJar.finalName}.jar</include>
+            </resource>
+            <resource>
+              <targetPath>/config</targetPath>
+              <directory>${project.basedir}/config</directory>
+              <include>*</include>
             </resource>
           </resources>
           <exposes>
             <expose>8100</expose>
             <expose>8433</expose>
           </exposes>
-          <cmd>["java", "-jar", "/opt/${project.artifactId}.jar"]</cmd>
-        </configuration>
+         </configuration>
         <executions>
           <execution>
             <id>build-image</id>
