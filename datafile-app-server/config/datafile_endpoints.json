@@ -2,8 +2,8 @@
 	"configs": {
 		"dmaap": {
 			"dmaapConsumerConfiguration": {
-				"dmaapHostName": "172.17.0.4",
-				"dmaapPortNumber": 2222,
+				"dmaapHostName": "localhost",
+				"dmaapPortNumber": 3906,
 				"dmaapTopicName": "/events/unauthenticated.VES_NOTIFICATION_OUTPUT",
 				"dmaapProtocol": "http",
 				"dmaapUserName": "admin",
@@ -15,8 +15,8 @@
 				"messageLimit": 1
 			},
 			"dmaapProducerConfiguration": {
-				"dmaapHostName": "172.17.0.4",
-				"dmaapPortNumber": 2222,
+				"dmaapHostName": "localhost",
+				"dmaapPortNumber": 3905,
 				"dmaapTopicName": "/events/unauthenticated.FILE_READY",
 				"dmaapProtocol": "http",
 				"dmaapUserName": "admin",

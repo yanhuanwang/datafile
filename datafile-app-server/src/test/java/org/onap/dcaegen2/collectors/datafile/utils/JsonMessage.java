@@ -20,6 +20,7 @@ package org.onap.dcaegen2.collectors.datafile.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Utility class to produce correctly formatted fileReady event Json messages.
@@ -31,7 +32,7 @@ public class JsonMessage {
     private String changeIdentifier;
     private String changeType;
     private String notificationFieldsVersion;
-    private ArrayList<AdditionalField> arrayOfAdditionalFields;
+    private List<AdditionalField> arrayOfAdditionalFields;
 
 
     @Override
@@ -142,7 +143,7 @@ public class JsonMessage {
         private String changeIdentifier;
         private String changeType;
         private String notificationFieldsVersion;
-        private ArrayList<AdditionalField> arrayOfAdditionalFields = new ArrayList<AdditionalField>();
+        private List<AdditionalField> arrayOfAdditionalFields = new ArrayList<AdditionalField>();
 
         public JsonMessageBuilder changeIdentifier(String changeIdentifier) {
             this.changeIdentifier = changeIdentifier;

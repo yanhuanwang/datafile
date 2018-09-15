@@ -21,7 +21,7 @@ import static org.mockito.Mockito.spy;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -61,7 +61,7 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
-        ArrayList<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
         // then
         Assertions.assertNotNull(listOfFileData);
         Assertions.assertEquals(expectedFileData, listOfFileData.get(0));
@@ -168,10 +168,10 @@ class DmaapConsumerJsonParserTest {
         String incorrectMessageString = message.toString();
 
         String parsedString = message.getParsed();
-        // System.out.println(parsedString);
+
         DmaapConsumerJsonParser dmaapConsumerJsonParser = spy(new DmaapConsumerJsonParser());
         JsonElement jsonElement = new JsonParser().parse(parsedString);
-        // System.out.println(jsonElement);
+
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(incorrectMessageString)))

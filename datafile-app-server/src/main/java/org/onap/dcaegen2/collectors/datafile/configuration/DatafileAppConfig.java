@@ -108,9 +108,9 @@ public abstract class DatafileAppConfig implements Config {
                         DmaapPublisherConfiguration.class);
             }
         } catch (IOException e) {
-            logger.warn("Problem with file loading, file: {}", filepath, e);
+            logger.error("Problem with file loading, file: {}", filepath, e);
         } catch (JsonSyntaxException e) {
-            logger.warn("Problem with Json deserialization", e);
+            logger.error("Problem with Json deserialization", e);
         }
     }
 

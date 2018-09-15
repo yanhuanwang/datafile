@@ -18,7 +18,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.tasks;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
@@ -63,7 +63,7 @@ public class ScheduledTasks {
         logger.trace("Execution of tasks was registered");
 
         Mono<String> dmaapProducerResponse = Mono.fromCallable(consumeFromDmaapMessage())
-            .doOnError(DmaapEmptyResponseException.class, error -> logger.warn("Nothing to consume from DMaaP"))
+            .doOnError(DmaapEmptyResponseException.class, error -> logger.error("Nothing to consume from DMaaP"))
             .flatMap(this::publishToDmaapConfiguration)
             .subscribeOn(Schedulers.elastic());
 
@@ -80,18 +80,18 @@ public class ScheduledTasks {
 
     private void onError(Throwable throwable) {
         if (!(throwable instanceof DmaapEmptyResponseException)) {
-            logger.warn("Chain of tasks have been aborted due to errors in Datafile workflow", throwable);
+            logger.error("Chain of tasks have been aborted due to errors in Datafile workflow", throwable);
         }
     }
 
-    private Callable<Mono<ArrayList<ConsumerDmaapModel>>> consumeFromDmaapMessage() {
+    private Callable<Mono<List<ConsumerDmaapModel>>> consumeFromDmaapMessage() {
         return () -> {
             dmaapConsumerTask.initConfigs();
             return dmaapConsumerTask.execute("");
         };
     }
 
-    private Mono<String> publishToDmaapConfiguration(Mono<ArrayList<ConsumerDmaapModel>> monoModel) {
+    private Mono<String> publishToDmaapConfiguration(Mono<List<ConsumerDmaapModel>> monoModel) {
         try {
             return dmaapProducerTask.execute(monoModel);
         } catch (DatafileTaskException e) {

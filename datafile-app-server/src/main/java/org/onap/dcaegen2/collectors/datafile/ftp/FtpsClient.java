@@ -36,9 +36,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Gets file from xNF with FTPS protocoll.
+ * Gets file from xNF with FTPS protocol.
  *
- * TODO: Refactor for better test and error handling.
+ * TODO: Refactor for better test.
  *
  * @author <a href="mailto:martin.c.yan@est.tech">Martin Yan</a>
  *
@@ -49,21 +49,23 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
                           // committed.
     private static final Logger logger = LoggerFactory.getLogger(FtpsClient.class);
 
-    public void collectFile(FileServerData fileServerData, String remoteFile, String localFile) {
+    public boolean collectFile(FileServerData fileServerData, String remoteFile, String localFile) {
+        boolean result = true;
         try {
             FTPSClient ftps = new FTPSClient("TLS");
 
-            boolean setUpSuccessful = setUpConnection(fileServerData, ftps);
+            result = setUpConnection(fileServerData, ftps);
 
-            if (setUpSuccessful) {
+            if (result) {
                 getFile(remoteFile, localFile, ftps);
 
                 closeDownConnection(ftps);
             }
         } catch (IOException ex) {
-            // TODO: Handle properly. Will be done as an improvement after first version committed.
-            logger.debug(ex.getMessage());
+            logger.error("Unable to collect file from xNF. " + fileServerData, ex);
+            result = false;
         }
+        return result;
     }
 
     private boolean setUpConnection(FileServerData fileServerData, FTPSClient ftps) {
@@ -103,21 +105,17 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
 
             if (!ftps.login(fileServerData.userId(), fileServerData.password())) {
                 ftps.logout();
-                logger.debug("Login Error");
+                logger.error("Unable to log in to xNF. " + fileServerData);
                 success = false;
             }
 
             if (success) {
                 int reply = ftps.getReplyCode();
-                // FTPReply stores a set of constants for FTP reply codes.
                 if (!FTPReply.isPositiveCompletion(reply)) {
-                    // TODO: Handle properly. Will be done as an improvement after first version
-                    // committed.
                     ftps.disconnect();
-                    logger.debug("Connection Error: " + reply);
+                    logger.error("Unable to connect in to xNF. " + fileServerData);
                     success = false;
                 }
-                // enter passive mode
                 ftps.enterLocalPassiveMode();
                 // Set protection buffer size
                 ftps.execPBSZ(0);
@@ -125,9 +123,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
                 ftps.execPROT("P");
             }
         } catch (Exception ex) {
-            // TODO: Handle properly. Will be done as an improvement after first version
-            // committed.
-            logger.debug(ex.getMessage());
+            logger.error("Unable to connect to xNF." + fileServerData, ex);
             success = false;
         }
 
@@ -136,21 +132,24 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
 
     private void getFile(String remoteFile, String localFile, FTPSClient ftps)
             throws IOException, FileNotFoundException {
-        // get output stream
         OutputStream output;
         File outfile = new File(localFile);
         outfile.createNewFile();
 
         output = new FileOutputStream(outfile);
-        // get the file from the remote system
+
         ftps.retrieveFile(remoteFile, output);
-        // close output stream
+
         output.close();
-        logger.debug("File " + outfile.getName() + " Download Successfull");
+        logger.debug("File " + outfile.getName() + " Download Successfull from xNF");
     }
 
-    private void closeDownConnection(FTPSClient ftps) throws IOException {
-        ftps.logout();
-        ftps.disconnect();
+    private void closeDownConnection(FTPSClient ftps) {
+        try {
+            ftps.logout();
+            ftps.disconnect();
+        } catch (Exception e) {
+            // Do nothing, file has been collected.
+        }
     }
 }
