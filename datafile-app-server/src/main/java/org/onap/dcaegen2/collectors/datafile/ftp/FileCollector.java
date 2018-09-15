@@ -129,7 +129,7 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
                 .port(uri.getPort()).ftpKeyPath(this.getKeyCertPath()).ftpKeyPassword(this.getKeyCertPassword())
                 .trustedCAPath(this.getTrustedCAPath()).trustedCAPassword(this.getTrustedCAPassword()).build();
         String remoteFile = uri.getPath();
-        String localFile = "target/" + FilenameUtils.getName(remoteFile);
+        String localFile = FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
 
         // TODO: Refactor for better error handling. Will be done as an improvement after first

@@ -73,6 +73,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
         // keymanager
         String keystorePath = fileServerData.ftpKeyPath();
         String keystorePass = fileServerData.ftpKeyPassword();
+        logger.info("keystorePath is: "+ keystorePath);
         KeyManager keyManager = null;
         try {
             keyManager = KeyManagerUtils.createClientKeyManager(new File(keystorePath), keystorePass);

@@ -45,7 +45,7 @@ public class FileCollectorTest {
     private static final int PORT_22 = 22;
     private static final String PM_FILE_NAME = "A20161224.1030-1045.bin.gz";
     private static final String REMOTE_FILE_LOCATION = "/ftp/rop/" + PM_FILE_NAME;
-    private static final String LOCAL_FILE_LOCATION = "target/" + PM_FILE_NAME;
+    private static final String LOCAL_FILE_LOCATION =  PM_FILE_NAME;
     private static final String FTPES_LOCATION = FTPES_SCHEME + SERVER_ADDRESS + ":" + PORT_22 + REMOTE_FILE_LOCATION;
     private static final String SFTP_LOCATION = SFTP_SCHEME + SERVER_ADDRESS + ":" + PORT_22 + REMOTE_FILE_LOCATION;
     private static final String GZIP_COMPRESSION = "gzip";
