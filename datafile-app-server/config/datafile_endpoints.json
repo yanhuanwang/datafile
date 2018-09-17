@@ -3,7 +3,7 @@
 		"dmaap": {
 			"dmaapConsumerConfiguration": {
 				"dmaapHostName": "localhost",
-				"dmaapPortNumber": 3906,
+				"dmaapPortNumber": 3904,
 				"dmaapTopicName": "/events/unauthenticated.VES_NOTIFICATION_OUTPUT",
 				"dmaapProtocol": "http",
 				"dmaapUserName": "admin",
