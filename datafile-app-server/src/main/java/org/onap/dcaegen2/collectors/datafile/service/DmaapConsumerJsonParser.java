@@ -46,6 +46,9 @@ public class DmaapConsumerJsonParser {
     private static final String CHANGE_TYPE = "changeType";
     private static final String NOTIFICATION_FIELDS_VERSION = "notificationFieldsVersion";
 
+    private static final String ARRAY_OF_NAMED_HASH_MAP = "arrayOfNamedHashMap";
+    private static final String NAME = "name";
+    private static final String HASH_MAP = "hashMap";
     private static final String LOCATION = "location";
     private static final String COMPRESSION = "compression";
     private static final String FILE_FORMAT_TYPE = "fileFormatType";
@@ -93,19 +96,18 @@ public class DmaapConsumerJsonParser {
             String changeIdentifier = getValueFromJson(notificationFields, CHANGE_IDENTIFIER);
             String changeType = getValueFromJson(notificationFields, CHANGE_TYPE);
             String notificationFieldsVersion = getValueFromJson(notificationFields, NOTIFICATION_FIELDS_VERSION);
-            JsonArray arrayOfAdditionalFields = notificationFields.getAsJsonArray("arrayOfAdditionalFields");
+            JsonArray arrayOfNamedHashMap = notificationFields.getAsJsonArray(ARRAY_OF_NAMED_HASH_MAP);
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
-                    && arrayOfAdditionalFields != null) {
-                Mono<List<FileData>> res =
-                        getFileDataFromJson(changeIdentifier, changeType, arrayOfAdditionalFields);
+                    && arrayOfNamedHashMap != null) {
+                Mono<List<FileData>> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfNamedHashMap);
                 return res;
             }
 
             if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
                 return Mono.error(
                         new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
-            } else if (arrayOfAdditionalFields != null) {
+            } else if (arrayOfNamedHashMap != null) {
                 return Mono.error(new DmaapNotFoundException(
                         "FileReady event arrayOfAdditionalFields is missing. " + jsonObject));
             }
@@ -123,12 +125,15 @@ public class DmaapConsumerJsonParser {
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
             if (arrayOfAdditionalFields.get(i) != null) {
                 JsonObject fileInfo = (JsonObject) arrayOfAdditionalFields.get(i);
-                String fileFormatType = getValueFromJson(fileInfo, FILE_FORMAT_TYPE);
-                String fileFormatVersion = getValueFromJson(fileInfo, FILE_FORMAT_VERSION);
-                String location = getValueFromJson(fileInfo, LOCATION);
-                String compression = getValueFromJson(fileInfo, COMPRESSION);
+                String name = getValueFromJson(fileInfo, NAME);
+                JsonObject data = fileInfo.getAsJsonObject(HASH_MAP);
+                String fileFormatType = getValueFromJson(data, FILE_FORMAT_TYPE);
+                String fileFormatVersion = getValueFromJson(data, FILE_FORMAT_VERSION);
+                String location = getValueFromJson(data, LOCATION);
+                String compression = getValueFromJson(data, COMPRESSION);
+
                 if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
-                        && isLocationAndCompressionNotEmpty(location, compression)) {
+                        && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
                     res.add(ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
                             .location(location).compression(compression).fileFormatType(fileFormatType)
                             .fileFormatVersion(fileFormatVersion).build());
@@ -157,8 +162,9 @@ public class DmaapConsumerJsonParser {
                 && (fileFormatType != null && !fileFormatType.isEmpty()));
     }
 
-    private boolean isLocationAndCompressionNotEmpty(String location, String compression) {
-        return (location != null && !location.isEmpty()) && (compression != null && !compression.isEmpty());
+    private boolean isNameAndLocationAndCompressionNotEmpty(String name, String location, String compression) {
+        return (name != null && !name.isEmpty()) && (location != null && !location.isEmpty())
+                && (compression != null && !compression.isEmpty());
     }
 
     private boolean containsHeader(JsonObject jsonObject) {

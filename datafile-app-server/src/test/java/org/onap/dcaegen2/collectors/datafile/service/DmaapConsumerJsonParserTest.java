@@ -43,7 +43,7 @@ class DmaapConsumerJsonParserTest {
     @Test
     void whenPassingCorrectJson_validationNotThrowingAnException() throws DmaapNotFoundException {
         // given
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
                 .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
                 .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
@@ -61,15 +61,18 @@ class DmaapConsumerJsonParserTest {
         JsonElement jsonElement = new JsonParser().parse(parsedString);
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
+
         List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+
         // then
         Assertions.assertNotNull(listOfFileData);
         Assertions.assertEquals(expectedFileData, listOfFileData.get(0));
     }
 
     @Test
-    void whenPassingCorrectJsonWihoutLocation_validationThrowingAnException() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().compression("gzip")
+    void whenPassingCorrectJsonWihoutName_validationThrowingAnException() {
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
+                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
                 .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
                 .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
@@ -87,8 +90,27 @@ class DmaapConsumerJsonParserTest {
     }
 
     @Test
+    void whenPassingCorrectJsonWihoutLocation_validationThrowingAnException() {
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
+                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
+                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
+
+        String messageString = message.toString();
+
+        String parsedString = message.getParsed();
+
+        DmaapConsumerJsonParser dmaapConsumerJsonParser = spy(new DmaapConsumerJsonParser());
+        JsonElement jsonElement = new JsonParser().parse(parsedString);
+        Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
+                .getJsonObjectFromAnArray(jsonElement);
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectError(DmaapNotFoundException.class).verify();
+    }
+
+    @Test
     void whenPassingCorrectJsonWihoutCompression_validationThrowingAnException() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
                 .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz")
                 .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
@@ -108,7 +130,7 @@ class DmaapConsumerJsonParserTest {
 
     @Test
     void whenPassingCorrectJsonWihoutFileFormatType_validationThrowingAnException() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
                 .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
                 .fileFormatVersion("V10").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
@@ -128,7 +150,7 @@ class DmaapConsumerJsonParserTest {
 
     @Test
     void whenPassingCorrectJsonWihoutFileFormatVersion_validationThrowingAnException() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
                 .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
                 .fileFormatType("org.3GPP.32.435#measCollec").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
