@@ -35,7 +35,7 @@ public class JsonMessage {
 
     @Override
     public String toString() {
-        return "[" + getParsed() + "]";
+        return "[\"" + getParsed() + "\"]";
     }
 
     /**

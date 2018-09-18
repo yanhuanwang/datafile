@@ -16,11 +16,6 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -41,6 +41,7 @@ import reactor.core.publisher.Mono;
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 public class DmaapConsumerJsonParser {
+    private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
 
     private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
 
@@ -66,12 +67,19 @@ public class DmaapConsumerJsonParser {
      * @return reactive Mono with an array of FileData
      */
     public Mono<List<FileData>> getJsonObject(Mono<String> monoMessage) {
-        return monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
+        Mono<String> new_monoMessage = monoMessage.map(s->s.replaceAll("\\\\", "").trim());
+        return new_monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
     }
 
     private Mono<JsonElement> getJsonParserMessage(String message) {
-        return StringUtils.isEmpty(message) ? Mono.error(new DmaapEmptyResponseException())
-                : Mono.fromSupplier(() -> new JsonParser().parse(message));
+        if(message.length()<2) {
+            return Mono.error(new DmaapEmptyResponseException());
+        }
+        String newmessage = message.substring(2, message.length()-2);
+        logger.info("raw message from message router: " + message);
+        logger.info("new message after preprocess: " + newmessage);
+        return StringUtils.isEmpty(newmessage) ? Mono.error(new DmaapEmptyResponseException())
+                : Mono.fromSupplier(() -> new JsonParser().parse(newmessage));
     }
 
     private Mono<List<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
