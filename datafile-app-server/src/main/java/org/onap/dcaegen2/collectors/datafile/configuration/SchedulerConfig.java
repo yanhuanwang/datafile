@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 @EnableScheduling
 public class SchedulerConfig extends DatafileAppConfig {
 
-    private static final int SCHEDULING_DELAY = 2000;
+    private static final int SCHEDULING_DELAY = 15000;
     private static volatile List<ScheduledFuture> scheduledFutureList = new ArrayList<ScheduledFuture>();
 
     private final TaskScheduler taskScheduler;

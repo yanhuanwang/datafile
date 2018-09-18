@@ -65,7 +65,7 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
 
     @Override
     Mono<List<FileData>> consume(Mono<String> message) {
-        logger.trace("Method called with arg {}", message);
+        logger.info("Response Message from dmaap, Method called with arg {}", message.block());
         return dmaapConsumerJsonParser.getJsonObject(message);
     }
 
