@@ -28,6 +28,8 @@ import java.util.stream.StreamSupport;
 
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapEmptyResponseException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import reactor.core.publisher.Mono;
@@ -39,6 +41,8 @@ import reactor.core.publisher.Mono;
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 public class DmaapConsumerJsonParser {
+
+    private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
 
     private static final String EVENT = "event";
     private static final String NOTIFICATION_FIELDS = "notificationFields";
@@ -100,7 +104,7 @@ public class DmaapConsumerJsonParser {
 
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfNamedHashMap != null) {
-                Mono<List<FileData>> res = getFileDataFromJson(changeIdentifier, changeType, arrayOfNamedHashMap);
+                Mono<List<FileData>> res = getAllFileDataFromJson(changeIdentifier, changeType, arrayOfNamedHashMap);
                 return res;
             }
 
@@ -108,8 +112,8 @@ public class DmaapConsumerJsonParser {
                 return Mono.error(
                         new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
             } else if (arrayOfNamedHashMap != null) {
-                return Mono.error(new DmaapNotFoundException(
-                        "FileReady event arrayOfAdditionalFields is missing. " + jsonObject));
+                return Mono.error(
+                        new DmaapNotFoundException("FileReady event arrayOfNamedHashMap is missing. " + jsonObject));
             }
             return Mono.error(
                     new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
@@ -119,31 +123,41 @@ public class DmaapConsumerJsonParser {
 
     }
 
-    private Mono<List<FileData>> getFileDataFromJson(String changeIdentifier, String changeType,
+    private Mono<List<FileData>> getAllFileDataFromJson(String changeIdentifier, String changeType,
             JsonArray arrayOfAdditionalFields) {
         List<FileData> res = new ArrayList<>();
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
             if (arrayOfAdditionalFields.get(i) != null) {
                 JsonObject fileInfo = (JsonObject) arrayOfAdditionalFields.get(i);
-                String name = getValueFromJson(fileInfo, NAME);
-                JsonObject data = fileInfo.getAsJsonObject(HASH_MAP);
-                String fileFormatType = getValueFromJson(data, FILE_FORMAT_TYPE);
-                String fileFormatVersion = getValueFromJson(data, FILE_FORMAT_VERSION);
-                String location = getValueFromJson(data, LOCATION);
-                String compression = getValueFromJson(data, COMPRESSION);
+                FileData fileData = getFileDataFromJson(fileInfo, changeIdentifier, changeType);
 
-                if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
-                        && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
-                    res.add(ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
-                            .location(location).compression(compression).fileFormatType(fileFormatType)
-                            .fileFormatVersion(fileFormatVersion).build());
+                if (fileData != null) {
+                    res.add(fileData);
                 } else {
-                    return Mono.error(new DmaapNotFoundException(
-                            "FileReady event does not contain correct file format information. " + fileInfo));
+                    logger.error("Unable to collect file from xNF. File information wrong. " + fileInfo);
                 }
             }
         }
         return Mono.just(res);
+    }
+
+    private FileData getFileDataFromJson(JsonObject fileInfo, String changeIdentifier, String changeType) {
+        FileData fileData = null;
+
+        String name = getValueFromJson(fileInfo, NAME);
+        JsonObject data = fileInfo.getAsJsonObject(HASH_MAP);
+        String fileFormatType = getValueFromJson(data, FILE_FORMAT_TYPE);
+        String fileFormatVersion = getValueFromJson(data, FILE_FORMAT_VERSION);
+        String location = getValueFromJson(data, LOCATION);
+        String compression = getValueFromJson(data, COMPRESSION);
+
+        if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
+                && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
+            fileData = ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
+                    .location(location).compression(compression).fileFormatType(fileFormatType)
+                    .fileFormatVersion(fileFormatVersion).build();
+        }
+        return fileData;
     }
 
     private String getValueFromJson(JsonObject jsonObject, String jsonKey) {
