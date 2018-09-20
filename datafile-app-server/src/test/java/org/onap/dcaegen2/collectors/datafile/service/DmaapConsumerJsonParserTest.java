@@ -16,6 +16,7 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.spy;
 
@@ -25,7 +26,6 @@ import com.google.gson.JsonParser;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
@@ -60,10 +60,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        Assertions.assertEquals(expectedFileData, listOfFileData.get(0));
+        assertNotNull(fileDataResult);
+        assertEquals(expectedFileData, fileDataResult.get(0));
     }
 
     @Test
@@ -81,10 +81,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        assertEquals(0, listOfFileData.size());
+        assertNotNull(fileDataResult);
+        assertEquals(0, fileDataResult.size());
     }
 
     @Test
@@ -101,10 +101,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        assertEquals(0, listOfFileData.size());
+        assertNotNull(fileDataResult);
+        assertEquals(0, fileDataResult.size());
     }
 
     @Test
@@ -122,10 +122,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        assertEquals(0, listOfFileData.size());
+        assertNotNull(fileDataResult);
+        assertEquals(0, fileDataResult.size());
     }
 
     @Test
@@ -143,10 +143,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        assertEquals(0, listOfFileData.size());
+        assertNotNull(fileDataResult);
+        assertEquals(0, fileDataResult.size());
     }
 
     @Test
@@ -169,10 +169,10 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> listOfFileData = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
+        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
 
-        Assertions.assertNotNull(listOfFileData);
-        assertEquals(1, listOfFileData.size());
+        assertNotNull(fileDataResult);
+        assertEquals(1, fileDataResult.size());
     }
 
     @Test

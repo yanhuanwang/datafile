@@ -206,7 +206,7 @@ public class JsonMessage {
                         .location("sftp://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
                         .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
         JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField)
+                .changeType("FileReady").notificationFieldsVersion("2.0").addAdditionalField(additionalField)
                 .addAdditionalField(secondAdditionalField).build();
         System.out.println(message.toString());
     }
