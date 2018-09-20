@@ -43,8 +43,6 @@ import reactor.core.publisher.Mono;
 public class DmaapConsumerJsonParser {
     private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
-
     private static final String EVENT = "event";
     private static final String NOTIFICATION_FIELDS = "notificationFields";
     private static final String CHANGE_IDENTIFIER = "changeIdentifier";
@@ -66,7 +64,6 @@ public class DmaapConsumerJsonParser {
      * @param rawMessage - results from DMaaP
      * @return reactive Mono with an array of FileData
      */
-
     public Mono<List<FileData>> getJsonObject(Mono<String> monoMessage) {
         Mono<String> new_monoMessage = monoMessage.map(s->s.replaceAll("\\\\", "").trim());
         return new_monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
@@ -155,7 +152,7 @@ public class DmaapConsumerJsonParser {
                 if (fileData != null) {
                     res.add(fileData);
                 } else {
-                    LOGGER.error("Unable to collect file from xNF. File information wrong. " + fileInfo);
+                    logger.error("Unable to collect file from xNF. File information wrong. " + fileInfo);
                 }
             }
         }
