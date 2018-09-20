@@ -62,11 +62,11 @@ public class DmaapConsumerJsonParser {
      * Extract info from string and create @see
      * {@link org.onap.dcaegen2.collectors.datafile.service.FileData}.
      *
-     * @param monoMessage - results from DMaaP
+     * @param rawMessage - results from DMaaP
      * @return reactive Mono with an array of FileData
      */
-    public Mono<List<FileData>> getJsonObject(Mono<String> monoMessage) {
-        return monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
+    public Mono<List<FileData>> getJsonObject(Mono<String> rawMessage) {
+        return rawMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
     }
 
     private Mono<JsonElement> getJsonParserMessage(String message) {
