@@ -65,35 +65,32 @@ public class DmaapConsumerJsonParser {
      * @return reactive Mono with an array of FileData
      */
     public Mono<List<FileData>> getJsonObject(Mono<String> monoMessage) {
-        Mono<String> new_monoMessage = monoMessage.map(s->s.replaceAll("\\\\", "").trim());
-        return new_monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
+        return monoMessage.flatMap(this::getJsonParserMessage).flatMap(this::createJsonConsumerModel);
     }
 
     private Mono<JsonElement> getJsonParserMessage(String message) {
         if(message.length()<2) {
             return Mono.error(new DmaapEmptyResponseException());
         }
-        String newmessage = message.substring(2, message.length()-2);
-        logger.info("raw message from message router: " + message);
-        logger.info("new message after preprocess: " + newmessage);
-        return StringUtils.isEmpty(newmessage) ? Mono.error(new DmaapEmptyResponseException())
-                : Mono.fromSupplier(() -> new JsonParser().parse(newmessage));
+        logger.trace("original message from message router: " + message);
+        return StringUtils.isEmpty(message) ? Mono.error(new DmaapEmptyResponseException())
+                : Mono.fromSupplier(() -> new JsonParser().parse(message));
     }
 
     private Mono<List<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
-        logger.info("in func createJsonConsumerModel: check function para, is it jsonObject: " + jsonElement.isJsonObject());
+        logger.trace("in function createJsonConsumerModel: check function para, is it jsonObject: " + jsonElement.isJsonObject());
         return jsonElement.isJsonObject() ? create(Mono.fromSupplier(jsonElement::getAsJsonObject))
                 : getFileDataFromJsonArray(jsonElement);
     }
 
     private Mono<List<FileData>> getFileDataFromJsonArray(JsonElement jsonElement) {
-        logger.info("starting to getFileDataFromJsonArray!");
+        logger.trace("starting to getFileDataFromJsonArray!");
         return create(Mono.fromCallable(() -> StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
                 .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
     }
 
     public Optional<JsonObject> getJsonObjectFromAnArray(JsonElement element) {
-        logger.info("starting to getJsonObjectFromAnArray!");
+        logger.trace("starting to getJsonObjectFromAnArray!");
 
         return Optional.of(new JsonParser().parse(element.getAsString()).getAsJsonObject());
     }
@@ -106,7 +103,7 @@ public class DmaapConsumerJsonParser {
     }
 
     private Mono<List<FileData>> transform(JsonObject jsonObject) {
-        logger.info("starting to transform!");
+        logger.trace("starting to transform!");
 
         if (containsHeader(jsonObject, EVENT, NOTIFICATION_FIELDS)) {
             JsonObject notificationFields = jsonObject.getAsJsonObject(EVENT).getAsJsonObject(NOTIFICATION_FIELDS);
@@ -141,7 +138,7 @@ public class DmaapConsumerJsonParser {
 
     private Mono<List<FileData>> getAllFileDataFromJson(String changeIdentifier, String changeType,
             JsonArray arrayOfAdditionalFields) {
-        logger.info("starting to getAllFileDataFromJson!");
+        logger.trace("starting to getAllFileDataFromJson!");
 
         List<FileData> res = new ArrayList<>();
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
@@ -160,7 +157,7 @@ public class DmaapConsumerJsonParser {
     }
 
     private FileData getFileDataFromJson(JsonObject fileInfo, String changeIdentifier, String changeType) {
-        logger.info("starting to getFileDataFromJson!");
+        logger.trace("starting to getFileDataFromJson!");
 
         FileData fileData = null;
 
@@ -170,11 +167,11 @@ public class DmaapConsumerJsonParser {
         String fileFormatVersion = getValueFromJson(data, FILE_FORMAT_VERSION);
         String location = getValueFromJson(data, LOCATION);
         String compression = getValueFromJson(data, COMPRESSION);
-        logger.info("name: "+name);
-        logger.info("fileFormatType: "+fileFormatType);
-        logger.info("fileFormatVersion: "+fileFormatVersion);
-        logger.info("location: "+location);
-        logger.info("compression: "+compression);
+        logger.trace("name: "+name);
+        logger.trace("fileFormatType: "+fileFormatType);
+        logger.trace("fileFormatVersion: "+fileFormatVersion);
+        logger.trace("location: "+location);
+        logger.trace("compression: "+compression);
 
         if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
                 && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
