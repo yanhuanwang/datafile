@@ -23,6 +23,8 @@ import java.util.stream.StreamSupport;
 
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapEmptyResponseException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapNotFoundException;
+import org.onap.dcaegen2.collectors.datafile.model.FileData;
+import org.onap.dcaegen2.collectors.datafile.model.ImmutableFileData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -58,8 +60,7 @@ public class DmaapConsumerJsonParser {
     private static final String FILE_FORMAT_VERSION = "fileFormatVersion";
 
     /**
-     * Extract info from string and create @see
-     * {@link org.onap.dcaegen2.collectors.datafile.service.FileData}.
+     * Extract info from string and create @see {@link FileData}.
      *
      * @param rawMessage - results from DMaaP
      * @return reactive Mono with an array of FileData
@@ -69,24 +70,21 @@ public class DmaapConsumerJsonParser {
     }
 
     private Mono<JsonElement> getJsonParserMessage(String message) {
-        if(message.length()<2) {
-            return Mono.error(new DmaapEmptyResponseException());
-        }
         logger.trace("original message from message router: " + message);
         return StringUtils.isEmpty(message) ? Mono.error(new DmaapEmptyResponseException())
-                : Mono.fromSupplier(() -> new JsonParser().parse(message));
+            : Mono.fromSupplier(() -> new JsonParser().parse(message));
     }
 
     private Mono<List<FileData>> createJsonConsumerModel(JsonElement jsonElement) {
         logger.trace("in function createJsonConsumerModel: check function para, is it jsonObject: " + jsonElement.isJsonObject());
         return jsonElement.isJsonObject() ? create(Mono.fromSupplier(jsonElement::getAsJsonObject))
-                : getFileDataFromJsonArray(jsonElement);
+            : getFileDataFromJsonArray(jsonElement);
     }
 
     private Mono<List<FileData>> getFileDataFromJsonArray(JsonElement jsonElement) {
         logger.trace("starting to getFileDataFromJsonArray!");
         return create(Mono.fromCallable(() -> StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
-                .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
+            .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
     }
 
     public Optional<JsonObject> getJsonObjectFromAnArray(JsonElement element) {
@@ -98,8 +96,8 @@ public class DmaapConsumerJsonParser {
     private Mono<List<FileData>> create(Mono<JsonObject> jsonObject) {
         logger.info("starting to create!");
         return jsonObject.flatMap(monoJsonP -> !containsHeader(monoJsonP)
-                ? Mono.error(new DmaapNotFoundException("Incorrect JsonObject - missing header"))
-                : transform(monoJsonP));
+            ? Mono.error(new DmaapNotFoundException("Incorrect JsonObject - missing header"))
+            : transform(monoJsonP));
     }
 
     private Mono<List<FileData>> transform(JsonObject jsonObject) {
@@ -117,28 +115,30 @@ public class DmaapConsumerJsonParser {
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                     && arrayOfNamedHashMap != null) {
                 logger.info("starting to getAllFileDataFromJson!");
+
                 Mono<List<FileData>> res = getAllFileDataFromJson(changeIdentifier, changeType, arrayOfNamedHashMap);
                 return res;
             }
 
             if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
                 return Mono.error(
-                        new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
+                    new DmaapNotFoundException("FileReady event header is missing information. " + jsonObject));
             } else if (arrayOfNamedHashMap != null) {
                 return Mono.error(
-                        new DmaapNotFoundException("FileReady event arrayOfNamedHashMap is missing. " + jsonObject));
+                    new DmaapNotFoundException("FileReady event arrayOfNamedHashMap is missing. " + jsonObject));
             }
             return Mono.error(
-                    new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
+                new DmaapNotFoundException("FileReady event does not contain correct information. " + jsonObject));
         }
         return Mono.error(
-                new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject));
+            new DmaapNotFoundException("FileReady event has incorrect JsonObject - missing header. " + jsonObject));
 
     }
 
     private Mono<List<FileData>> getAllFileDataFromJson(String changeIdentifier, String changeType,
             JsonArray arrayOfAdditionalFields) {
         logger.trace("starting to getAllFileDataFromJson!");
+
 
         List<FileData> res = new ArrayList<>();
         for (int i = 0; i < arrayOfAdditionalFields.size(); i++) {
@@ -174,10 +174,10 @@ public class DmaapConsumerJsonParser {
         logger.trace("compression: "+compression);
 
         if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
-                && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
+            && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
             fileData = ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
-                    .location(location).compression(compression).fileFormatType(fileFormatType)
-                    .fileFormatVersion(fileFormatVersion).build();
+                .location(location).compression(compression).fileFormatType(fileFormatType)
+                .fileFormatVersion(fileFormatVersion).build();
         }
         return fileData;
     }
@@ -187,20 +187,20 @@ public class DmaapConsumerJsonParser {
     }
 
     private boolean isNotificationFieldsHeaderNotEmpty(String changeIdentifier, String changeType,
-            String notificationFieldsVersion) {
+        String notificationFieldsVersion) {
         return ((changeIdentifier != null && !changeIdentifier.isEmpty())
-                && (changeType != null && !changeType.isEmpty())
-                && (notificationFieldsVersion != null && !notificationFieldsVersion.isEmpty()));
+            && (changeType != null && !changeType.isEmpty())
+            && (notificationFieldsVersion != null && !notificationFieldsVersion.isEmpty()));
     }
 
     private boolean isFileFormatFieldsNotEmpty(String fileFormatVersion, String fileFormatType) {
         return ((fileFormatVersion != null && !fileFormatVersion.isEmpty())
-                && (fileFormatType != null && !fileFormatType.isEmpty()));
+            && (fileFormatType != null && !fileFormatType.isEmpty()));
     }
 
     private boolean isNameAndLocationAndCompressionNotEmpty(String name, String location, String compression) {
         return (name != null && !name.isEmpty()) && (location != null && !location.isEmpty())
-                && (compression != null && !compression.isEmpty());
+            && (compression != null && !compression.isEmpty());
     }
 
     private boolean containsHeader(JsonObject jsonObject) {

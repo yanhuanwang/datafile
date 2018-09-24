@@ -56,6 +56,13 @@ public class DmaapReactiveWebClient {
      */
     public WebClient build() {
         return WebClient.builder().defaultHeader(HttpHeaders.CONTENT_TYPE, dmaaPContentType)
+                /*comment this basic authentication for test purpose,
+                 * this could be correct when deployment in real onap instance,
+                 * because AAF probably requires this
+                 * however in CSIT env, dmaap-mr does not do basic authentication
+                 * so this line has to be commented for test purpose,
+                 * or maybe in future we should add a switch for turn it on/off
+                */
 //                .filter(basicAuthentication(dmaaPUserName, dmaaPUserPassword))
                 .filter(logRequest())
                 .filter(logResponse()).build();
