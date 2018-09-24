@@ -27,7 +27,7 @@ import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
-import org.onap.dcaegen2.collectors.datafile.service.FileData;
+import org.onap.dcaegen2.collectors.datafile.model.FileData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,8 +109,11 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     }
 
     public Mono<List<ConsumerDmaapModel>> getFilesFromSender(List<FileData> listOfFileData) {
+        logger.info("starting to getFilesFromSender");
         List<ConsumerDmaapModel> consumerModels = new ArrayList<ConsumerDmaapModel>();
         for (FileData fileData : listOfFileData) {
+
+            logger.info(fileData.location());
             String localFile = collectFile(fileData);
 
             if (localFile != null) {
@@ -122,6 +125,8 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
     }
 
     private String collectFile(FileData fileData) {
+        logger.info("starting to collectFile");
+
         String location = fileData.location();
         URI uri = URI.create(location);
         String[] userInfo = getUserNameAndPasswordIfGiven(uri.getUserInfo());
@@ -132,7 +137,9 @@ public class FileCollector { // TODO: Should be final, but that means adding Pow
         String remoteFile = uri.getPath();
         String localFile = FilenameUtils.getName(remoteFile);
         String scheme = uri.getScheme();
-
+        logger.info("remoteFile: "+remoteFile);
+        logger.info("localFile: "+localFile);
+        logger.info("scheme: "+scheme);
         boolean fileDownloaded = false;
         if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
             fileDownloaded = ftpsClient.collectFile(fileServerData, remoteFile, localFile);

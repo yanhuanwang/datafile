@@ -17,7 +17,7 @@
 			"dmaapProducerConfiguration": {
 				"dmaapHostName": "localhost",
 				"dmaapPortNumber": 3905,
-				"dmaapTopicName": "/events/unauthenticated.FILE_READY",
+				"dmaapTopicName": "publish",
 				"dmaapProtocol": "http",
 				"dmaapUserName": "admin",
 				"dmaapUserPassword": "admin",

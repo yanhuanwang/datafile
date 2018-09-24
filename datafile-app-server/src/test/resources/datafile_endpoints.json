@@ -19,6 +19,7 @@
                 "dmaapPortNumber": 3905,
                 "dmaapTopicName": "/events/unauthenticated.FILE_READY",
                 "dmaapProtocol": "http",
+                "dmaapTopicName": "publish",
                 "dmaapUserName": "admin",
                 "dmaapUserPassword": "admin",
                 "dmaapContentType": "application/octet-stream"

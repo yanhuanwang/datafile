@@ -2,23 +2,19 @@
  * ============LICENSE_START======================================================================
  * Copyright (C) 2018 NOKIA Intellectual Property, 2018 Nordix Foundation. All rights reserved.
  * ===============================================================================================
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  * ============LICENSE_END========================================================================
  */
 
 package org.onap.dcaegen2.collectors.datafile.service;
-
-import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
 import org.onap.dcaegen2.collectors.datafile.config.DmaapCustomConfig;
 import org.slf4j.Logger;
@@ -59,12 +55,17 @@ public class DmaapReactiveWebClient {
      * @return WebClient
      */
     public WebClient build() {
-        return WebClient.builder()
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, dmaaPContentType)
-            .filter(basicAuthentication(dmaaPUserName, dmaaPUserPassword))
-            .filter(logRequest())
-            .filter(logResponse())
-            .build();
+        return WebClient.builder().defaultHeader(HttpHeaders.CONTENT_TYPE, dmaaPContentType)
+                /*comment this basic authentication for test purpose,
+                 * this could be correct when deployment in real onap instance,
+                 * because AAF probably requires this
+                 * however in CSIT env, dmaap-mr does not do basic authentication
+                 * so this line has to be commented for test purpose,
+                 * or maybe in future we should add a switch for turn it on/off
+                */
+//                .filter(basicAuthentication(dmaaPUserName, dmaaPUserPassword))
+                .filter(logRequest())
+                .filter(logResponse()).build();
     }
 
     private ExchangeFilterFunction logResponse() {
@@ -78,7 +79,9 @@ public class DmaapReactiveWebClient {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
             logger.info("Request: {} {}", clientRequest.method(), clientRequest.url());
             clientRequest.headers()
-                .forEach((name, values) -> values.forEach(value -> logger.info("{}={}", name, value)));
+                    .forEach((name, values) -> values.forEach(value -> logger.info("{}={}", name, value)));
+            logger.info("HTTP request headers: " + clientRequest.headers().toString());
+
             return Mono.just(clientRequest);
         });
     }
