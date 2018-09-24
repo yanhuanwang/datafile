@@ -67,6 +67,11 @@
               <include>${project.artifactId}.jar</include>
               <targetPath>/target</targetPath>
             </resource>
+            <resource>
+              <targetPath>/config</targetPath>
+              <directory>${project.basedir}/config</directory>
+              <include>*</include>
+            </resource>
           </resources>
           <exposes>
             <expose>8100</expose>
