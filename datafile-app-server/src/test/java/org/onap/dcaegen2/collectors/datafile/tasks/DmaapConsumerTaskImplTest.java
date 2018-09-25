@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
@@ -35,16 +34,16 @@ import org.onap.dcaegen2.collectors.datafile.config.ImmutableDmaapConsumerConfig
 import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DatafileTaskException;
 import org.onap.dcaegen2.collectors.datafile.exceptions.DmaapEmptyResponseException;
-import org.onap.dcaegen2.collectors.datafile.ftp.FileCollector;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
+import org.onap.dcaegen2.collectors.datafile.model.FileData;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableFileData;
 import org.onap.dcaegen2.collectors.datafile.service.DmaapConsumerJsonParser;
-import org.onap.dcaegen2.collectors.datafile.model.FileData;
 import org.onap.dcaegen2.collectors.datafile.service.consumer.DmaapConsumerReactiveHttpClient;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage;
 import org.onap.dcaegen2.collectors.datafile.utils.JsonMessage.AdditionalField;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -75,13 +74,11 @@ class DmaapConsumerTaskImplTest {
     private DmaapConsumerTaskImpl dmaapConsumerTask;
     private DmaapConsumerReactiveHttpClient dmaapConsumerReactiveHttpClient;
 
-    private static FileCollector fileCollectorMock;
-
     private static String ftpesMessage;
-    private static List<FileData> ftpesFileDataAfterConsume = new ArrayList<FileData>();
+    private static FileData ftpesFileData;
 
     private static String sftpMessage;
-    private static List<FileData> sftpFileDataAfterConsume = new ArrayList<FileData>();
+    private static FileData sftpFileData;
 
     @BeforeAll
     public static void setUp() {
@@ -99,10 +96,9 @@ class DmaapConsumerTaskImplTest {
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(ftpesAdditionalField).build();
         ftpesMessage = ftpesJsonMessage.toString();
-        FileData ftpesFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+        ftpesFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).location(FTPES_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-        ftpesFileDataAfterConsume.add(ftpesFileData);
 
         AdditionalField sftpAdditionalField =
                 new JsonMessage.AdditionalFieldBuilder().location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
@@ -111,26 +107,21 @@ class DmaapConsumerTaskImplTest {
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(sftpAdditionalField).build();
         sftpMessage = sftpJsonMessage.toString();
-        FileData sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+        sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-        sftpFileDataAfterConsume.add(sftpFileData);
 
 
         ImmutableConsumerDmaapModel consumerDmaapModel =
                 ImmutableConsumerDmaapModel.builder().location(LOCAL_FILE_LOCATION).compression(GZIP_COMPRESSION)
                         .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
         listOfConsumerDmaapModel.add(consumerDmaapModel);
-
-        fileCollectorMock = mock(FileCollector.class);
     }
 
     @Test
     public void whenPassedObjectDoesntFit_ThrowsDatafileTaskException() {
-        // given
-        prepareMocksForDmaapConsumer("", new ArrayList<FileData>());
+        prepareMocksForDmaapConsumer("", null);
 
-        // then
         StepVerifier.create(dmaapConsumerTask.execute("Sample input")).expectSubscription()
                 .expectError(DmaapEmptyResponseException.class).verify();
 
@@ -139,51 +130,39 @@ class DmaapConsumerTaskImplTest {
 
     @Test
     public void whenFtpes_ReturnsCorrectResponse() throws DatafileTaskException {
-        // given
-        prepareMocksForDmaapConsumer(ftpesMessage, ftpesFileDataAfterConsume);
-        // when
-        final List<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
-        // then
+        prepareMocksForDmaapConsumer(ftpesMessage, ftpesFileData);
+
+        StepVerifier.create(dmaapConsumerTask.execute(ftpesMessage)).expectNext(ftpesFileData).verifyComplete();
+
         verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
-        verify(fileCollectorMock, times(1)).getFilesFromSender(ftpesFileDataAfterConsume);
-        verifyNoMoreInteractions(fileCollectorMock);
-        Assertions.assertEquals(listOfConsumerDmaapModel, arrayOfResponse);
-
     }
 
     @Test
     public void whenSftp_ReturnsCorrectResponse() throws DatafileTaskException {
-        // given
-        prepareMocksForDmaapConsumer(sftpMessage, sftpFileDataAfterConsume);
-        // when
-        final List<ConsumerDmaapModel> arrayOfResponse = dmaapConsumerTask.execute("Sample input").block();
-        // then
+        prepareMocksForDmaapConsumer(sftpMessage, sftpFileData);
+
+        StepVerifier.create(dmaapConsumerTask.execute(ftpesMessage)).expectNext(sftpFileData).verifyComplete();
+
         verify(dmaapConsumerReactiveHttpClient, times(1)).getDmaapConsumerResponse();
         verifyNoMoreInteractions(dmaapConsumerReactiveHttpClient);
-        verify(fileCollectorMock, times(1)).getFilesFromSender(sftpFileDataAfterConsume);
-        verifyNoMoreInteractions(fileCollectorMock);
-        Assertions.assertEquals(listOfConsumerDmaapModel, arrayOfResponse);
-
     }
 
-    private void prepareMocksForDmaapConsumer(String message, List<FileData> fileDataAfterConsume) {
+    private void prepareMocksForDmaapConsumer(String message, FileData fileDataAfterConsume) {
         Mono<String> messageAsMono = Mono.just(message);
         DmaapConsumerJsonParser dmaapConsumerJsonParserMock = mock(DmaapConsumerJsonParser.class);
         dmaapConsumerReactiveHttpClient = mock(DmaapConsumerReactiveHttpClient.class);
         when(dmaapConsumerReactiveHttpClient.getDmaapConsumerResponse()).thenReturn(messageAsMono);
 
         if (!message.isEmpty()) {
-            when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono)).thenReturn(Mono.just(fileDataAfterConsume));
+            when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono)).thenReturn(Flux.just(fileDataAfterConsume));
         } else {
             when(dmaapConsumerJsonParserMock.getJsonObject(messageAsMono))
-                    .thenReturn(Mono.error(new DmaapEmptyResponseException()));
+                    .thenReturn(Flux.error(new DmaapEmptyResponseException()));
         }
-        when(fileCollectorMock.getFilesFromSender(fileDataAfterConsume))
-                .thenReturn(Mono.just(listOfConsumerDmaapModel));
 
         dmaapConsumerTask = spy(new DmaapConsumerTaskImpl(appConfig, dmaapConsumerReactiveHttpClient,
-                dmaapConsumerJsonParserMock, fileCollectorMock));
+                dmaapConsumerJsonParserMock));
         when(dmaapConsumerTask.resolveConfiguration()).thenReturn(dmaapConsumerConfiguration);
         doReturn(dmaapConsumerReactiveHttpClient).when(dmaapConsumerTask).resolveClient();
     }

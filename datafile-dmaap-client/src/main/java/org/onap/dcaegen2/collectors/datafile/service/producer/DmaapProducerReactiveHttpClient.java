@@ -21,7 +21,6 @@ import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.net.URI;
-import java.util.List;
 
 import org.apache.http.HttpHeaders;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
@@ -38,6 +37,7 @@ import org.springframework.web.reactive.function.client.WebClient.RequestBodyUri
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -76,12 +76,13 @@ public class DmaapProducerReactiveHttpClient {
     /**
      * Function for calling DMaaP HTTP producer - post request to DMaaP.
      *
-     * @param consumerDmaapModelMono - object which will be sent to DMaaP
+     * @param consumerDmaapModel - object which will be sent to DMaaP
      * @return status code of operation
      */
-    public Mono<String> getDmaapProducerResponse(Mono<List<ConsumerDmaapModel>> consumerDmaapModelMono) {
-        consumerDmaapModelMono.subscribe(models -> postFilesAndData(models));
-        return Mono.just(HttpStatus.OK.toString());
+    public Flux<String> getDmaapProducerResponse(ConsumerDmaapModel consumerDmaapModel) {
+        Flux<String> result = postFileAndData(consumerDmaapModel);
+
+        return result;
     }
 
     public DmaapProducerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
@@ -89,32 +90,23 @@ public class DmaapProducerReactiveHttpClient {
         return this;
     }
 
-    private void postFilesAndData(List<ConsumerDmaapModel> models) {
-        for (ConsumerDmaapModel consumerDmaapModel : models) {
-            postFileAndData(consumerDmaapModel);
-        }
-    }
-
-    private void postFileAndData(ConsumerDmaapModel model) {
+    private Flux<String> postFileAndData(ConsumerDmaapModel model) {
+        logger.trace("Entering postFileAndData with {}", model);
         RequestBodyUriSpec post = webClient.post();
 
-        boolean headPrepared = prepareHead(model, post);
+        prepareHead(model, post);
 
-        if (headPrepared) {
-            prepareBody(model, post);
+        prepareBody(model, post);
 
-            ResponseSpec responseSpec = post.retrieve();
-            responseSpec.onStatus(HttpStatus::is4xxClientError,
-                    clientResponse -> handlePostErrors(model, clientResponse));
-            responseSpec.onStatus(HttpStatus::is5xxServerError,
-                    clientResponse -> handlePostErrors(model, clientResponse));
-            String bodyToMono = responseSpec.bodyToMono(String.class).block();
-            logger.debug("File info sent to DR with response: " + bodyToMono);
-        }
+        ResponseSpec responseSpec = post.retrieve();
+        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> handlePostErrors(model, clientResponse));
+        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> handlePostErrors(model, clientResponse));
+        Flux<String> response = responseSpec.bodyToFlux(String.class);
+        logger.trace("Exiting postFileAndData with {}", response.toString());
+        return response;
     }
 
-    private boolean prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
-        boolean result = true;
+    private void prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
         post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
 
         JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
@@ -122,8 +114,6 @@ public class DmaapProducerReactiveHttpClient {
         post.header(X_ATT_DR_META, metaData.toString());
 
         post.uri(getUri(location));
-
-        return result;
     }
 
     private void prepareBody(ConsumerDmaapModel model, RequestBodyUriSpec post) {
@@ -134,11 +124,10 @@ public class DmaapProducerReactiveHttpClient {
     }
 
     private URI getUri(String location) {
-        String fileName = location.substring(location.indexOf("/"), location.length());
-        String path = dmaapTopicName + "/" + DEFAULT_FEED_ID + "/" +  fileName;
-        URI uri = new DefaultUriBuilderFactory().builder().scheme(dmaapProtocol).host(dmaapHostName)
-                .port(dmaapPortNumber).path(path).build();
-        return uri;
+        String fileName = location.substring(location.indexOf(File.separator) + 1, location.length());
+        String path = dmaapTopicName + "/" + DEFAULT_FEED_ID + "/" + fileName;
+        return new DefaultUriBuilderFactory().builder().scheme(dmaapProtocol).host(dmaapHostName).port(dmaapPortNumber)
+                .path(path).build();
     }
 
     private Mono<Exception> handlePostErrors(ConsumerDmaapModel model, ClientResponse clientResponse) {

@@ -16,14 +16,11 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.spy;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -63,10 +60,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(expectedFileData, fileDataResult.get(0));
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+                .expectNext(expectedFileData).verifyComplete();
     }
 
     @Test
@@ -84,10 +79,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(0, fileDataResult.size());
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+        .expectNextCount(0).verifyComplete();
     }
 
     @Test
@@ -104,10 +97,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(0, fileDataResult.size());
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+        .expectNextCount(0).verifyComplete();
     }
 
     @Test
@@ -125,10 +116,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(0, fileDataResult.size());
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+        .expectNextCount(0).verifyComplete();
     }
 
     @Test
@@ -146,10 +135,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(0, fileDataResult.size());
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+        .expectNextCount(0).verifyComplete();
     }
 
     @Test
@@ -165,6 +152,10 @@ class DmaapConsumerJsonParserTest {
                 .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalFaultyField)
                 .addAdditionalField(additionalField).build();
 
+        FileData expectedFileData = ImmutableFileData.builder().changeIdentifier("PM_MEAS_FILES")
+                .changeType("FileReady").location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz")
+                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
+
         String messageString = message.toString();
         String parsedString = message.getParsed();
         DmaapConsumerJsonParser dmaapConsumerJsonParser = spy(new DmaapConsumerJsonParser());
@@ -172,10 +163,8 @@ class DmaapConsumerJsonParserTest {
         Mockito.doReturn(Optional.of(jsonElement.getAsJsonObject())).when(dmaapConsumerJsonParser)
                 .getJsonObjectFromAnArray(jsonElement);
 
-        List<FileData> fileDataResult = dmaapConsumerJsonParser.getJsonObject(Mono.just((messageString))).block();
-
-        assertNotNull(fileDataResult);
-        assertEquals(1, fileDataResult.size());
+        StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
+        .expectNext(expectedFileData).verifyComplete();
     }
 
     @Test
