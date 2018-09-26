@@ -52,7 +52,7 @@ import reactor.test.StepVerifier;
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 class DmaapConsumerTaskImplTest {
-    private static final String PM_MEAS_CHANGE_IDINTIFIER = "PM_MEAS_FILES";
+    private static final String PM_MEAS_CHANGE_IDENTIFIER = "PM_MEAS_FILES";
     private static final String FILE_READY_CHANGE_TYPE = "FileReady";
     private static final String FTPES_SCHEME = "ftpes://";
     private static final String SFTP_SCHEME = "sftp://";
@@ -92,29 +92,31 @@ class DmaapConsumerTaskImplTest {
         AdditionalField ftpesAdditionalField =
                 new JsonMessage.AdditionalFieldBuilder().location(FTPES_LOCATION).compression(GZIP_COMPRESSION)
                         .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-        JsonMessage ftpesJsonMessage = new JsonMessage.JsonMessageBuilder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+        JsonMessage ftpesJsonMessage = new JsonMessage.JsonMessageBuilder().changeIdentifier(PM_MEAS_CHANGE_IDENTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(ftpesAdditionalField).build();
         ftpesMessage = ftpesJsonMessage.toString();
-        ftpesFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
-                .changeType(FILE_READY_CHANGE_TYPE).location(FTPES_LOCATION).compression(GZIP_COMPRESSION)
-                .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        ftpesFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDENTIFIER)
+                .changeType(FILE_READY_CHANGE_TYPE).name(PM_FILE_NAME).location(FTPES_LOCATION)
+                .compression(GZIP_COMPRESSION).fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE)
+                .fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         AdditionalField sftpAdditionalField =
                 new JsonMessage.AdditionalFieldBuilder().location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
                         .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-        JsonMessage sftpJsonMessage = new JsonMessage.JsonMessageBuilder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
+        JsonMessage sftpJsonMessage = new JsonMessage.JsonMessageBuilder().changeIdentifier(PM_MEAS_CHANGE_IDENTIFIER)
                 .changeType(FILE_READY_CHANGE_TYPE).notificationFieldsVersion("1.0")
                 .addAdditionalField(sftpAdditionalField).build();
         sftpMessage = sftpJsonMessage.toString();
-        sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDINTIFIER)
-                .changeType(FILE_READY_CHANGE_TYPE).location(SFTP_LOCATION).compression(GZIP_COMPRESSION)
+        sftpFileData = ImmutableFileData.builder().changeIdentifier(PM_MEAS_CHANGE_IDENTIFIER)
+                .changeType(FILE_READY_CHANGE_TYPE).name(PM_FILE_NAME).location(SFTP_LOCATION)
+                .compression(GZIP_COMPRESSION).fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE)
+                .fileFormatVersion(FILE_FORMAT_VERSION).build();
+
+
+        ImmutableConsumerDmaapModel consumerDmaapModel = ImmutableConsumerDmaapModel.builder().name(PM_FILE_NAME)
+                .location(LOCAL_FILE_LOCATION).compression(GZIP_COMPRESSION)
                 .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
-
-
-        ImmutableConsumerDmaapModel consumerDmaapModel =
-                ImmutableConsumerDmaapModel.builder().location(LOCAL_FILE_LOCATION).compression(GZIP_COMPRESSION)
-                        .fileFormatType(MEAS_COLLECT_FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
         listOfConsumerDmaapModel.add(consumerDmaapModel);
     }
 
@@ -161,8 +163,8 @@ class DmaapConsumerTaskImplTest {
                     .thenReturn(Flux.error(new DmaapEmptyResponseException()));
         }
 
-        dmaapConsumerTask = spy(new DmaapConsumerTaskImpl(appConfig, dmaapConsumerReactiveHttpClient,
-                dmaapConsumerJsonParserMock));
+        dmaapConsumerTask =
+                spy(new DmaapConsumerTaskImpl(appConfig, dmaapConsumerReactiveHttpClient, dmaapConsumerJsonParserMock));
         when(dmaapConsumerTask.resolveConfiguration()).thenReturn(dmaapConsumerConfiguration);
         doReturn(dmaapConsumerReactiveHttpClient).when(dmaapConsumerTask).resolveClient();
     }

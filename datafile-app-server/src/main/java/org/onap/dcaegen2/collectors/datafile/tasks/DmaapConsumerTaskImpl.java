@@ -19,7 +19,6 @@ package org.onap.dcaegen2.collectors.datafile.tasks;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapConsumerConfiguration;
 import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
 import org.onap.dcaegen2.collectors.datafile.configuration.Config;
-import org.onap.dcaegen2.collectors.datafile.ftp.FileCollector;
 import org.onap.dcaegen2.collectors.datafile.model.FileData;
 import org.onap.dcaegen2.collectors.datafile.service.DmaapConsumerJsonParser;
 import org.onap.dcaegen2.collectors.datafile.service.consumer.DmaapConsumerReactiveHttpClient;
@@ -45,7 +44,7 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
     private DmaapConsumerReactiveHttpClient dmaaPConsumerReactiveHttpClient;
 
     @Autowired
-    public DmaapConsumerTaskImpl(AppConfig datafileAppConfig, FileCollector fileCollector) {
+    public DmaapConsumerTaskImpl(AppConfig datafileAppConfig) {
         this.datafileAppConfig = datafileAppConfig;
         this.dmaapConsumerJsonParser = new DmaapConsumerJsonParser();
     }
@@ -60,14 +59,14 @@ public class DmaapConsumerTaskImpl extends DmaapConsumerTask {
 
     @Override
     Flux<FileData> consume(Mono<String> message) {
-        logger.trace("Method called with arg {}", message);
+        logger.trace("consume called with arg {}", message.toString());
         return dmaapConsumerJsonParser.getJsonObject(message);
     }
 
     @Override
     protected Flux<FileData> execute(String object) {
         dmaaPConsumerReactiveHttpClient = resolveClient();
-        logger.trace("Method called with arg {}", object);
+        logger.trace("execute called with arg {}", object);
         return consume((dmaaPConsumerReactiveHttpClient.getDmaapConsumerResponse()));
     }
 

@@ -47,7 +47,8 @@ import reactor.core.publisher.Mono;
 public class DmaapProducerReactiveHttpClient {
 
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
-    private static final String LOCATION = "location";
+    private static final String NAME_JSON_TAG = "name";
+    private static final String LOCATION_JSON_TAG = "location";
     private static final String DEFAULT_FEED_ID = "1";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -80,9 +81,21 @@ public class DmaapProducerReactiveHttpClient {
      * @return status code of operation
      */
     public Flux<String> getDmaapProducerResponse(ConsumerDmaapModel consumerDmaapModel) {
-        Flux<String> result = postFileAndData(consumerDmaapModel);
+        logger.trace("Entering getDmaapProducerResponse with {}", consumerDmaapModel);
 
-        return result;
+        RequestBodyUriSpec post = webClient.post();
+
+        prepareHead(consumerDmaapModel, post);
+
+        prepareBody(consumerDmaapModel, post);
+
+        ResponseSpec responseSpec = post.retrieve();
+        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> handlePostErrors(consumerDmaapModel, clientResponse));
+        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> handlePostErrors(consumerDmaapModel, clientResponse));
+        Flux<String> response = responseSpec.bodyToFlux(String.class);
+
+        logger.trace("Exiting getDmaapProducerResponse with {}", response);
+        return response;
     }
 
     public DmaapProducerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
@@ -90,30 +103,15 @@ public class DmaapProducerReactiveHttpClient {
         return this;
     }
 
-    private Flux<String> postFileAndData(ConsumerDmaapModel model) {
-        logger.trace("Entering postFileAndData with {}", model);
-        RequestBodyUriSpec post = webClient.post();
-
-        prepareHead(model, post);
-
-        prepareBody(model, post);
-
-        ResponseSpec responseSpec = post.retrieve();
-        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> handlePostErrors(model, clientResponse));
-        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> handlePostErrors(model, clientResponse));
-        Flux<String> response = responseSpec.bodyToFlux(String.class);
-        logger.trace("Exiting postFileAndData with {}", response.toString());
-        return response;
-    }
-
     private void prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
         post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
 
         JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
-        String location = metaData.getAsJsonObject().remove(LOCATION).getAsString();
+        String name = metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
+        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
         post.header(X_ATT_DR_META, metaData.toString());
 
-        post.uri(getUri(location));
+        post.uri(getUri(name));
     }
 
     private void prepareBody(ConsumerDmaapModel model, RequestBodyUriSpec post) {
@@ -123,8 +121,7 @@ public class DmaapProducerReactiveHttpClient {
         post.body(BodyInserters.fromResource(httpResource));
     }
 
-    private URI getUri(String location) {
-        String fileName = location.substring(location.indexOf(File.separator) + 1, location.length());
+    private URI getUri(String fileName) {
         String path = dmaapTopicName + "/" + DEFAULT_FEED_ID + "/" + fileName;
         return new DefaultUriBuilderFactory().builder().scheme(dmaapProtocol).host(dmaapHostName).port(dmaapPortNumber)
                 .path(path).build();

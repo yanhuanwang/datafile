@@ -33,6 +33,8 @@ public interface FileData {
 
     String changeType();
 
+    String name();
+
     String location();
 
     String compression();

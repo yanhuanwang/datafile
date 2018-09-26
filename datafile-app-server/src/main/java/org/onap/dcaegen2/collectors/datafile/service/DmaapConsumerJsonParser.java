@@ -154,7 +154,7 @@ public class DmaapConsumerJsonParser {
 
         if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
             && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
-            fileData = ImmutableFileData.builder().changeIdentifier(changeIdentifier).changeType(changeType)
+            fileData = ImmutableFileData.builder().name(name).changeIdentifier(changeIdentifier).changeType(changeType)
                 .location(location).compression(compression).fileFormatType(fileFormatType)
                 .fileFormatVersion(fileFormatVersion).build();
         }

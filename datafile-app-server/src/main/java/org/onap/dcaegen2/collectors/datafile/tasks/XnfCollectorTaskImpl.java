@@ -22,7 +22,6 @@ import java.io.File;
 import java.net.URI;
 
 import org.apache.commons.io.FilenameUtils;
-import org.onap.dcaegen2.collectors.datafile.ftp.FileCollector;
 import org.onap.dcaegen2.collectors.datafile.ftp.FileServerData;
 import org.onap.dcaegen2.collectors.datafile.ftp.FtpsClient;
 import org.onap.dcaegen2.collectors.datafile.ftp.ImmutableFileServerData;
@@ -47,7 +46,7 @@ public class XnfCollectorTaskImpl implements XnfCollectorTask {
     private static final String FTPS = "ftps";
     private static final String SFTP = "sftp";
 
-    private static final Logger logger = LoggerFactory.getLogger(FileCollector.class);
+    private static final Logger logger = LoggerFactory.getLogger(XnfCollectorTaskImpl.class);
 
     private final FtpsClient ftpsClient;
     private final SftpClient sftpClient;
@@ -109,11 +108,12 @@ public class XnfCollectorTaskImpl implements XnfCollectorTask {
     }
 
     private ConsumerDmaapModel getConsumerDmaapModel(FileData fileData, String localFile) {
+        String name = fileData.name();
         String compression = fileData.compression();
         String fileFormatType = fileData.fileFormatType();
         String fileFormatVersion = fileData.fileFormatVersion();
 
-        return ImmutableConsumerDmaapModel.builder().location(localFile).compression(compression)
+        return ImmutableConsumerDmaapModel.builder().name(name).location(localFile).compression(compression)
                 .fileFormatType(fileFormatType).fileFormatVersion(fileFormatVersion).build();
     }
 }

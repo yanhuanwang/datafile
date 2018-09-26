@@ -19,8 +19,12 @@ package org.onap.dcaegen2.collectors.datafile.service.producer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,12 +33,14 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
+import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModelForUnitTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -47,6 +53,7 @@ class DmaapProducerReactiveHttpClientTest {
 
     private static final String FILE_NAME = "A20161224.1030-1045.bin.gz";
     private static final String LOCATION_JSON_TAG = "location";
+    private static final String NAME_JSON_TAG = "name";
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
 
     private static final String HOST = "54.45.33.2";
@@ -95,16 +102,16 @@ class DmaapProducerReactiveHttpClientTest {
 
         StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
                 .expectNext("200").verifyComplete();
-//        dmaapProducerReactiveHttpClient.getDmaapProducerResponse(Mono.just(consumerDmaapModelList));
-//
-//        verify(requestBodyUriSpecMock).header(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);
-//        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
-//        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
-//        verify(requestBodyUriSpecMock).header(X_ATT_DR_META, metaData.toString());
-//        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTP_SCHEME).host(HOST).port(PORT)
-//                .path(PUBLISH_TOPIC + "/" + DEFAULT_FEED_ID + "/" + FILE_NAME).build();
-//        verify(requestBodyUriSpecMock).uri(expectedUri);
-//        verify(requestBodyUriSpecMock).body(any());
+
+        verify(requestBodyUriSpecMock).header(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);
+        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
+        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
+        metaData.getAsJsonObject().remove(NAME_JSON_TAG);
+        verify(requestBodyUriSpecMock).header(X_ATT_DR_META, metaData.toString());
+        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTP_SCHEME).host(HOST).port(PORT)
+                .path(PUBLISH_TOPIC + "/" + DEFAULT_FEED_ID + "/" + FILE_NAME).build();
+        verify(requestBodyUriSpecMock).uri(expectedUri);
+        verify(requestBodyUriSpecMock).body(any());
     }
 
     private void mockWebClientDependantObject() {

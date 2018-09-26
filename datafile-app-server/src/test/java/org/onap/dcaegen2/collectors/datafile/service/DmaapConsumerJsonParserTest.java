@@ -39,19 +39,27 @@ import reactor.test.StepVerifier;
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 class DmaapConsumerJsonParserTest {
+    private static final String PM_FILE_NAME = "A20161224.1030-1045.bin.gz";
+    private static final String LOCATION = "ftpes://192.168.0.101:22/ftp/rop/" + PM_FILE_NAME;
+    private static final String GZIP_COMPRESSION = "gzip";
+    private static final String FILE_FORMAT_TYPE = "org.3GPP.32.435#measCollec";
+    private static final String FILE_FORMAT_VERSION = "V10";
+    private static final String CHANGE_IDENTIFIER = "PM_MEAS_FILES";
+    private static final String CHANGE_TYPE = "FileReady";
+    private static final String NOTIFICATION_FIELDS_VERSION = "1.0";
 
     @Test
     void whenPassingCorrectJson_validationNotThrowingAnException() throws DmaapNotFoundException {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME).location(LOCATION)
+                .compression(GZIP_COMPRESSION).fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION)
+                .build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalField).build();
 
-                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
-                .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
-
-        FileData expectedFileData = ImmutableFileData.builder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz")
-                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
+        FileData expectedFileData = ImmutableFileData.builder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).name(PM_FILE_NAME).location(LOCATION).compression(GZIP_COMPRESSION)
+                .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -66,11 +74,12 @@ class DmaapConsumerJsonParserTest {
 
     @Test
     void whenPassingCorrectJsonWihoutName_noFileData() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder()
-                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
-                .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
+        AdditionalField additionalField =
+                new JsonMessage.AdditionalFieldBuilder().location(LOCATION).compression(GZIP_COMPRESSION)
+                        .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalField).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -80,15 +89,17 @@ class DmaapConsumerJsonParserTest {
                 .getJsonObjectFromAnArray(jsonElement);
 
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
-        .expectNextCount(0).verifyComplete();
+                .expectNextCount(0).verifyComplete();
     }
 
     @Test
     void whenPassingCorrectJsonWihoutLocation_noFileData() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
-                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
+        AdditionalField additionalField =
+                new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME).compression(GZIP_COMPRESSION)
+                        .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalField).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -98,16 +109,16 @@ class DmaapConsumerJsonParserTest {
                 .getJsonObjectFromAnArray(jsonElement);
 
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
-        .expectNextCount(0).verifyComplete();
+                .expectNextCount(0).verifyComplete();
     }
 
     @Test
     void whenPassingCorrectJsonWihoutCompression_noFileData() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
-                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz")
-                .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME).location(LOCATION)
+                .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalField).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -117,16 +128,16 @@ class DmaapConsumerJsonParserTest {
                 .getJsonObjectFromAnArray(jsonElement);
 
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
-        .expectNextCount(0).verifyComplete();
+                .expectNextCount(0).verifyComplete();
     }
 
     @Test
     void whenPassingCorrectJsonWihoutFileFormatType_noFileData() {
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
-                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
-                .fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalField).build();
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME).location(LOCATION)
+                .compression(GZIP_COMPRESSION).fileFormatVersion(FILE_FORMAT_VERSION).build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalField).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -136,25 +147,23 @@ class DmaapConsumerJsonParserTest {
                 .getJsonObjectFromAnArray(jsonElement);
 
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
-        .expectNextCount(0).verifyComplete();
+                .expectNextCount(0).verifyComplete();
     }
 
     @Test
     void whenPassingOneCorrectJsonWihoutFileFormatVersionAndOneCorrect_oneFileData() {
-        AdditionalField additionalFaultyField =
-                new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
-                        .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
-                        .fileFormatType("org.3GPP.32.435#measCollec").build();
-        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name("A20161224.1030-1045.bin.gz")
-                .location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz").compression("gzip")
-                .fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
-        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").notificationFieldsVersion("1.0").addAdditionalField(additionalFaultyField)
-                .addAdditionalField(additionalField).build();
+        AdditionalField additionalFaultyField = new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME)
+                .location(LOCATION).compression(GZIP_COMPRESSION).fileFormatType(FILE_FORMAT_TYPE).build();
+        AdditionalField additionalField = new JsonMessage.AdditionalFieldBuilder().name(PM_FILE_NAME).location(LOCATION)
+                .compression(GZIP_COMPRESSION).fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION)
+                .build();
+        JsonMessage message = new JsonMessage.JsonMessageBuilder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).notificationFieldsVersion(NOTIFICATION_FIELDS_VERSION)
+                .addAdditionalField(additionalFaultyField).addAdditionalField(additionalField).build();
 
-        FileData expectedFileData = ImmutableFileData.builder().changeIdentifier("PM_MEAS_FILES")
-                .changeType("FileReady").location("ftpes://192.168.0.101:22/ftp/rop/A20161224.1030-1045.bin.gz")
-                .compression("gzip").fileFormatType("org.3GPP.32.435#measCollec").fileFormatVersion("V10").build();
+        FileData expectedFileData = ImmutableFileData.builder().changeIdentifier(CHANGE_IDENTIFIER)
+                .changeType(CHANGE_TYPE).name(PM_FILE_NAME).location(LOCATION).compression(GZIP_COMPRESSION)
+                .fileFormatType(FILE_FORMAT_TYPE).fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         String messageString = message.toString();
         String parsedString = message.getParsed();
@@ -164,7 +173,7 @@ class DmaapConsumerJsonParserTest {
                 .getJsonObjectFromAnArray(jsonElement);
 
         StepVerifier.create(dmaapConsumerJsonParser.getJsonObject(Mono.just(messageString))).expectSubscription()
-        .expectNext(expectedFileData).verifyComplete();
+                .expectNext(expectedFileData).verifyComplete();
     }
 
     @Test
