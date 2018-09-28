@@ -16,16 +16,19 @@
 
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
@@ -37,9 +40,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Flux;
 
@@ -90,33 +96,43 @@ public class DmaapProducerReactiveHttpClient {
         logger.trace("Entering getDmaapProducerResponse with {}", consumerDmaapModel);
 
         try {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(dmaapContentType));
-        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
-        metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
-        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
-        headers.set(X_ATT_DR_META, metaData.toString());
-        String plainCreds = user + "@" + pwd;
-        byte[] plainCredsBytes = plainCreds.getBytes();
-        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-        String base64Creds = new String(base64CredsBytes);
-        headers.add("Authorization", "Basic " + base64Creds);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(dmaapContentType));
+            JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
+            metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
+            metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
+            headers.set(X_ATT_DR_META, metaData.toString());
+            String plainCreds = user + ":" + pwd;
+            byte[] plainCredsBytes = plainCreds.getBytes(StandardCharsets.ISO_8859_1);
+            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+            String base64Creds = new String(base64CredsBytes);
+            logger.trace("base64Creds...: {}", base64Creds);
+            headers.add("Authorization", "Basic " + base64Creds);
 
-        InputStream in = new FileSystemResource(consumerDmaapModel.getLocation()).getInputStream();
+            InputStream in = new FileSystemResource(consumerDmaapModel.getLocation()).getInputStream();
 
-        HttpEntity<byte[]> request = new HttpEntity<>(IOUtils.toByteArray(in), headers);
+            HttpEntity<byte[]> request = new HttpEntity<>(IOUtils.toByteArray(in), headers);
 
-        RestTemplate restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
-            @Override
-            protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
-                super.prepareConnection(connection, httpMethod);
-                connection.setInstanceFollowRedirects(true);
-            }
-        });
-        ResponseEntity<String> responseEntity =
-                restTemplate.exchange(getUri(consumerDmaapModel.getName()), HttpMethod.PUT, request, String.class);
+            SSLContext sslContext = new SSLContextBuilder()
+                    .loadTrustMaterial(null, (certificate, authType) -> true).build();
+            CloseableHttpClient httpClient =
+                    HttpClients.custom()
+                    .setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                    .setRedirectStrategy(new PublishRedirectStrategy())
+                    .build();
 
-        return Flux.just(responseEntity.getStatusCode().toString());
+            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
+
+            RestTemplate restTemplate = new RestTemplate(requestFactory);
+            restTemplate.setInterceptors(Collections.singletonList(new RequestResponseLoggingInterceptor()));
+
+            logger.trace("Starting to publish to DR");
+            ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(getUri(consumerDmaapModel.getName()), HttpMethod.PUT, request, String.class);
+
+            return Flux.just(responseEntity.getStatusCode().toString());
         } catch (Exception e) {
             logger.error("Unable to send file to DataRouter. Data: {}", consumerDmaapModel, e);
             return Flux.empty();
