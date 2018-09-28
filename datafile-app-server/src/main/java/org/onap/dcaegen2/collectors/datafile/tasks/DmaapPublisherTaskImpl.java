@@ -37,7 +37,6 @@ public class DmaapPublisherTaskImpl extends DmaapPublisherTask {
 
     private static final Logger logger = LoggerFactory.getLogger(DmaapPublisherTaskImpl.class);
     private final Config datafileAppConfig;
-    private DmaapProducerReactiveHttpClient dmaapProducerReactiveHttpClient;
 
     @Autowired
     public DmaapPublisherTaskImpl(AppConfig datafileAppConfig) {
@@ -45,16 +44,10 @@ public class DmaapPublisherTaskImpl extends DmaapPublisherTask {
     }
 
     @Override
-    public Flux<String> publish(ConsumerDmaapModel consumerDmaapModel) {
-        logger.trace("Publishing on DMaaP DataRouter {}", consumerDmaapModel);
+    public Flux<String> execute(ConsumerDmaapModel consumerDmaapModel) {
+        logger.trace("Method called with arg {}", consumerDmaapModel);
+        DmaapProducerReactiveHttpClient dmaapProducerReactiveHttpClient = resolveClient();
         return dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel);
-    }
-
-    @Override
-    public Flux<String> execute(ConsumerDmaapModel consumerDmaapModels) {
-        dmaapProducerReactiveHttpClient = resolveClient();
-        logger.trace("Method called with arg {}", consumerDmaapModels);
-        return publish(consumerDmaapModels);
     }
 
     @Override
@@ -63,8 +56,8 @@ public class DmaapPublisherTaskImpl extends DmaapPublisherTask {
     }
 
     @Override
-    DmaapProducerReactiveHttpClient resolveClient() {
-        return new DmaapProducerReactiveHttpClient(resolveConfiguration()).createDmaapWebClient(buildWebClient());
+    protected DmaapProducerReactiveHttpClient resolveClient() {
+        return new DmaapProducerReactiveHttpClient(resolveConfiguration());
     }
 
 }

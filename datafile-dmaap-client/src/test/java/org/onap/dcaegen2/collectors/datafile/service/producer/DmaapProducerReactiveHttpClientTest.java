@@ -57,7 +57,7 @@ class DmaapProducerReactiveHttpClientTest {
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
 
     private static final String HOST = "54.45.33.2";
-    private static final String HTTP_SCHEME = "http";
+    private static final String HTTPS_SCHEME = "https";
     private static final int PORT = 1234;
     private static final String APPLICATION_OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
     private static final String PUBLISH_TOPIC = "publish";
@@ -75,10 +75,10 @@ class DmaapProducerReactiveHttpClientTest {
     @BeforeEach
     void setUp() {
         when(dmaapPublisherConfigurationMock.dmaapHostName()).thenReturn(HOST);
-        when(dmaapPublisherConfigurationMock.dmaapProtocol()).thenReturn(HTTP_SCHEME);
+        when(dmaapPublisherConfigurationMock.dmaapProtocol()).thenReturn(HTTPS_SCHEME);
         when(dmaapPublisherConfigurationMock.dmaapPortNumber()).thenReturn(PORT);
-        when(dmaapPublisherConfigurationMock.dmaapUserName()).thenReturn("DATAFILE");
-        when(dmaapPublisherConfigurationMock.dmaapUserPassword()).thenReturn("DATAFILE");
+        when(dmaapPublisherConfigurationMock.dmaapUserName()).thenReturn("dradmin");
+        when(dmaapPublisherConfigurationMock.dmaapUserPassword()).thenReturn("dradmin");
         when(dmaapPublisherConfigurationMock.dmaapContentType()).thenReturn(APPLICATION_OCTET_STREAM_CONTENT_TYPE);
         when(dmaapPublisherConfigurationMock.dmaapTopicName()).thenReturn(PUBLISH_TOPIC);
 
@@ -108,14 +108,14 @@ class DmaapProducerReactiveHttpClientTest {
         metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
         metaData.getAsJsonObject().remove(NAME_JSON_TAG);
         verify(requestBodyUriSpecMock).header(X_ATT_DR_META, metaData.toString());
-        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTP_SCHEME).host(HOST).port(PORT)
+        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTPS_SCHEME).host(HOST).port(PORT)
                 .path(PUBLISH_TOPIC + "/" + DEFAULT_FEED_ID + "/" + FILE_NAME).build();
         verify(requestBodyUriSpecMock).uri(expectedUri);
         verify(requestBodyUriSpecMock).body(any());
     }
 
     private void mockWebClientDependantObject() {
-        when(webClientMock.post()).thenReturn(requestBodyUriSpecMock);
+        when(webClientMock.put()).thenReturn(requestBodyUriSpecMock);
         when(requestBodyUriSpecMock.uri((URI) any())).thenReturn(requestBodyUriSpecMock);
 
         when(requestBodyUriSpecMock.retrieve()).thenReturn(responseSpecMock);

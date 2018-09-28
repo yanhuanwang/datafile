@@ -19,26 +19,29 @@ package org.onap.dcaegen2.collectors.datafile.service.producer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 
-import org.apache.http.HttpHeaders;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * @author <a href="mailto:przemyslaw.wasala@nokia.com">Przemysław Wąsala</a> on 7/4/18
@@ -53,12 +56,13 @@ public class DmaapProducerReactiveHttpClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private WebClient webClient;
     private final String dmaapHostName;
     private final Integer dmaapPortNumber;
     private final String dmaapTopicName;
     private final String dmaapProtocol;
     private final String dmaapContentType;
+    private final String user;
+    private final String pwd;
 
     /**
      * Constructor DmaapProducerReactiveHttpClient.
@@ -72,65 +76,56 @@ public class DmaapProducerReactiveHttpClient {
         this.dmaapTopicName = dmaapPublisherConfiguration.dmaapTopicName();
         this.dmaapProtocol = dmaapPublisherConfiguration.dmaapProtocol();
         this.dmaapContentType = dmaapPublisherConfiguration.dmaapContentType();
+        this.user = dmaapPublisherConfiguration.dmaapUserName();
+        this.pwd = dmaapPublisherConfiguration.dmaapUserPassword();
     }
 
     /**
-     * Function for calling DMaaP HTTP producer - post request to DMaaP.
+     * Function for calling DMaaP HTTP producer - post request to DMaaP DataRouter.
      *
-     * @param consumerDmaapModel - object which will be sent to DMaaP
+     * @param consumerDmaapModel - object which will be sent to DMaaP DataRouter
      * @return status code of operation
      */
     public Flux<String> getDmaapProducerResponse(ConsumerDmaapModel consumerDmaapModel) {
         logger.trace("Entering getDmaapProducerResponse with {}", consumerDmaapModel);
 
-        RequestBodyUriSpec post = webClient.post();
-
-        prepareHead(consumerDmaapModel, post);
-
-        prepareBody(consumerDmaapModel, post);
-
-        ResponseSpec responseSpec = post.retrieve();
-        responseSpec.onStatus(HttpStatus::is4xxClientError, clientResponse -> handlePostErrors(consumerDmaapModel, clientResponse));
-        responseSpec.onStatus(HttpStatus::is5xxServerError, clientResponse -> handlePostErrors(consumerDmaapModel, clientResponse));
-        Flux<String> response = responseSpec.bodyToFlux(String.class);
-
-        logger.trace("Exiting getDmaapProducerResponse with {}", response);
-        return response;
-    }
-
-    public DmaapProducerReactiveHttpClient createDmaapWebClient(WebClient webClient) {
-        this.webClient = webClient;
-        return this;
-    }
-
-    private void prepareHead(ConsumerDmaapModel model, RequestBodyUriSpec post) {
-        post.header(HttpHeaders.CONTENT_TYPE, dmaapContentType);
-
-        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(model));
-        String name = metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
+        try {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(dmaapContentType));
+        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
+        metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
         metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
-        post.header(X_ATT_DR_META, metaData.toString());
+        headers.set(X_ATT_DR_META, metaData.toString());
+        String plainCreds = user + "@" + pwd;
+        byte[] plainCredsBytes = plainCreds.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        headers.add("Authorization", "Basic " + base64Creds);
 
-        post.uri(getUri(name));
-    }
+        InputStream in = new FileSystemResource(consumerDmaapModel.getLocation()).getInputStream();
 
-    private void prepareBody(ConsumerDmaapModel model, RequestBodyUriSpec post) {
-        String fileLocation = model.getLocation();
-        File fileResource = new File(fileLocation);
-        FileSystemResource httpResource = new FileSystemResource(fileResource);
-        post.body(BodyInserters.fromResource(httpResource));
+        HttpEntity<byte[]> request = new HttpEntity<>(IOUtils.toByteArray(in), headers);
+
+        RestTemplate restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory() {
+            @Override
+            protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
+                super.prepareConnection(connection, httpMethod);
+                connection.setInstanceFollowRedirects(true);
+            }
+        });
+        ResponseEntity<String> responseEntity =
+                restTemplate.exchange(getUri(consumerDmaapModel.getName()), HttpMethod.PUT, request, String.class);
+
+        return Flux.just(responseEntity.getStatusCode().toString());
+        } catch (Exception e) {
+            logger.error("Unable to send file to DataRouter. Data: {}", consumerDmaapModel, e);
+            return Flux.empty();
+        }
     }
 
     private URI getUri(String fileName) {
         String path = dmaapTopicName + "/" + DEFAULT_FEED_ID + "/" + fileName;
         return new DefaultUriBuilderFactory().builder().scheme(dmaapProtocol).host(dmaapHostName).port(dmaapPortNumber)
                 .path(path).build();
-    }
-
-    private Mono<Exception> handlePostErrors(ConsumerDmaapModel model, ClientResponse clientResponse) {
-        String errorMessage = "Unable to post file to Data Router. " + model + "Reason: " + clientResponse.toString();
-        logger.error(errorMessage);
-
-        return Mono.error(new Exception(errorMessage));
     }
 }
