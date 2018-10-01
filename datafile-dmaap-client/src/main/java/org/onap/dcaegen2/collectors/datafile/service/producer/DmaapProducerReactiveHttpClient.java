@@ -16,36 +16,30 @@
 
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-
-import javax.net.ssl.SSLContext;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
 import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Flux;
 
@@ -58,6 +52,7 @@ public class DmaapProducerReactiveHttpClient {
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
     private static final String NAME_JSON_TAG = "name";
     private static final String LOCATION_JSON_TAG = "location";
+    private static final String URI_SEPARATOR = "/";
     private static final String DEFAULT_FEED_ID = "1";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -69,6 +64,9 @@ public class DmaapProducerReactiveHttpClient {
     private final String dmaapContentType;
     private final String user;
     private final String pwd;
+
+    private IFileSystemResource fileResource;
+    private IRestTemplate restTemplate;
 
     /**
      * Constructor DmaapProducerReactiveHttpClient.
@@ -98,39 +96,17 @@ public class DmaapProducerReactiveHttpClient {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(dmaapContentType));
-            JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
-            metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
-            metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
-            headers.set(X_ATT_DR_META, metaData.toString());
-            String plainCreds = user + ":" + pwd;
-            byte[] plainCredsBytes = plainCreds.getBytes(StandardCharsets.ISO_8859_1);
-            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-            String base64Creds = new String(base64CredsBytes);
-            logger.trace("base64Creds...: {}", base64Creds);
-            headers.add("Authorization", "Basic " + base64Creds);
 
-            InputStream in = new FileSystemResource(consumerDmaapModel.getLocation()).getInputStream();
+            addMetaDataToHead(consumerDmaapModel, headers);
 
-            HttpEntity<byte[]> request = new HttpEntity<>(IOUtils.toByteArray(in), headers);
+            addUserCredentialsToHead(headers);
 
-            SSLContext sslContext = new SSLContextBuilder()
-                    .loadTrustMaterial(null, (certificate, authType) -> true).build();
-            CloseableHttpClient httpClient =
-                    HttpClients.custom()
-                    .setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                    .setRedirectStrategy(new PublishRedirectStrategy())
-                    .build();
+            HttpEntity<byte[]> request = addFileToRequest(consumerDmaapModel, headers);
 
-            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-            requestFactory.setHttpClient(httpClient);
-
-            RestTemplate restTemplate = new RestTemplate(requestFactory);
-            restTemplate.setInterceptors(Collections.singletonList(new RequestResponseLoggingInterceptor()));
 
             logger.trace("Starting to publish to DR");
             ResponseEntity<String> responseEntity =
-                    restTemplate.exchange(getUri(consumerDmaapModel.getName()), HttpMethod.PUT, request, String.class);
+                    getRestTemplate().exchange(getUri(consumerDmaapModel.getName()), HttpMethod.PUT, request, String.class);
 
             return Flux.just(responseEntity.getStatusCode().toString());
         } catch (Exception e) {
@@ -139,9 +115,53 @@ public class DmaapProducerReactiveHttpClient {
         }
     }
 
+    private void addUserCredentialsToHead(HttpHeaders headers) {
+        String plainCreds = user + ":" + pwd;
+        byte[] plainCredsBytes = plainCreds.getBytes(StandardCharsets.ISO_8859_1);
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        logger.trace("base64Creds...: {}", base64Creds);
+        headers.add("Authorization", "Basic " + base64Creds);
+    }
+
+    private void addMetaDataToHead(ConsumerDmaapModel consumerDmaapModel, HttpHeaders headers) {
+        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
+        metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
+        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
+        headers.set(X_ATT_DR_META, metaData.toString());
+    }
+
+    private HttpEntity<byte[]> addFileToRequest(ConsumerDmaapModel consumerDmaapModel, HttpHeaders headers)
+            throws IOException {
+        InputStream in = getInputStream(consumerDmaapModel.getLocation());
+        return new HttpEntity<>(IOUtils.toByteArray(in), headers);
+    }
+
+    private InputStream getInputStream(String filePath) throws IOException {
+        if (fileResource == null) {
+            fileResource = new FileSystemResourceWrapper(filePath);
+        }
+        return fileResource.getInputStream();
+    }
+
+    private IRestTemplate getRestTemplate() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
+        if (restTemplate == null) {
+            restTemplate = new RestTemplateWrapper();
+        }
+        return restTemplate;
+    }
+
     private URI getUri(String fileName) {
-        String path = dmaapTopicName + "/" + DEFAULT_FEED_ID + "/" + fileName;
+        String path = dmaapTopicName + URI_SEPARATOR + DEFAULT_FEED_ID + URI_SEPARATOR + fileName;
         return new DefaultUriBuilderFactory().builder().scheme(dmaapProtocol).host(dmaapHostName).port(dmaapPortNumber)
                 .path(path).build();
+    }
+
+    protected void setFileSystemResource(IFileSystemResource fileSystemResource) {
+        fileResource = fileSystemResource;
+    }
+
+    protected void setRestTemplate(IRestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 }

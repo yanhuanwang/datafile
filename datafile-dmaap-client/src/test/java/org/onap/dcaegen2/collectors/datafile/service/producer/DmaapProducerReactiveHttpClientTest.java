@@ -17,32 +17,26 @@
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.onap.dcaegen2.collectors.datafile.config.DmaapPublisherConfiguration;
-import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModelForUnitTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 /**
@@ -67,9 +61,10 @@ class DmaapProducerReactiveHttpClientTest {
 
     private DmaapPublisherConfiguration dmaapPublisherConfigurationMock = mock(DmaapPublisherConfiguration.class);
     private ConsumerDmaapModel consumerDmaapModel = new ConsumerDmaapModelForUnitTest();
-    private WebClient webClientMock = mock(WebClient.class);
-    private RequestBodyUriSpec requestBodyUriSpecMock;
-    private ResponseSpec responseSpecMock;
+
+    private IFileSystemResource fileSystemResourceMock = mock(IFileSystemResource.class);
+    private IRestTemplate restTemplateMock = mock(IRestTemplate.class);
+    private ResponseEntity<String> responseEntityMock = mock(ResponseEntity.class);
 
 
     @BeforeEach
@@ -83,44 +78,30 @@ class DmaapProducerReactiveHttpClientTest {
         when(dmaapPublisherConfigurationMock.dmaapTopicName()).thenReturn(PUBLISH_TOPIC);
 
         dmaapProducerReactiveHttpClient = new DmaapProducerReactiveHttpClient(dmaapPublisherConfigurationMock);
-
-        webClientMock = spy(WebClient.builder()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, dmaapPublisherConfigurationMock.dmaapContentType())
-                .filter(basicAuthentication(dmaapPublisherConfigurationMock.dmaapUserName(),
-                        dmaapPublisherConfigurationMock.dmaapUserPassword()))
-                .build());
-        requestBodyUriSpecMock = mock(RequestBodyUriSpec.class);
-        responseSpecMock = mock(ResponseSpec.class);
+        dmaapProducerReactiveHttpClient.setFileSystemResource(fileSystemResourceMock);
+        dmaapProducerReactiveHttpClient.setRestTemplate(restTemplateMock);
     }
 
     @Test
-    void getHttpResponse_Success() {
+    void getHttpResponse_Success() throws Exception {
         mockWebClientDependantObject();
-        dmaapProducerReactiveHttpClient.createDmaapWebClient(webClientMock);
-        List<ConsumerDmaapModel> consumerDmaapModelList = new ArrayList<ConsumerDmaapModel>();
-        consumerDmaapModelList.add(consumerDmaapModel);
 
         StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
-                .expectNext("200").verifyComplete();
+                .expectNext(HttpStatus.OK.toString()).verifyComplete();
 
-        verify(requestBodyUriSpecMock).header(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);
-        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
-        metaData.getAsJsonObject().remove(LOCATION_JSON_TAG);
-        metaData.getAsJsonObject().remove(NAME_JSON_TAG);
-        verify(requestBodyUriSpecMock).header(X_ATT_DR_META, metaData.toString());
         URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTPS_SCHEME).host(HOST).port(PORT)
                 .path(PUBLISH_TOPIC + "/" + DEFAULT_FEED_ID + "/" + FILE_NAME).build();
-        verify(requestBodyUriSpecMock).uri(expectedUri);
-        verify(requestBodyUriSpecMock).body(any());
+
+        verify(restTemplateMock)
+                .exchange(eq(expectedUri), eq(HttpMethod.PUT), any(), eq(String.class));
     }
 
-    private void mockWebClientDependantObject() {
-        when(webClientMock.put()).thenReturn(requestBodyUriSpecMock);
-        when(requestBodyUriSpecMock.uri((URI) any())).thenReturn(requestBodyUriSpecMock);
+    private void mockWebClientDependantObject() throws IOException {
+        InputStream fileStream = new ByteArrayInputStream("Just a string.".getBytes());
+        when(fileSystemResourceMock.getInputStream()).thenReturn(fileStream);
 
-        when(requestBodyUriSpecMock.retrieve()).thenReturn(responseSpecMock);
-        when(responseSpecMock.onStatus(any(), any())).thenReturn(responseSpecMock);
-        Flux<String> expectedResult = Flux.just("200");
-        when(responseSpecMock.bodyToFlux(String.class)).thenReturn(expectedResult);
+        when(restTemplateMock.exchange(any(), any(), any(), any()))
+                .thenReturn(responseEntityMock);
+        when(responseEntityMock.getStatusCode()).thenReturn(HttpStatus.OK);
     }
 }
