@@ -29,7 +29,7 @@ public class CommonFunctions {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonFunctions.class);
 
-    private static Gson gson = new GsonBuilder().create();
+    private static Gson gson = new GsonBuilder().serializeNulls().create();
 
 
     private CommonFunctions() {}
