@@ -15,7 +15,6 @@
  */
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.util.StreamUtils;
 
 public class RequestResponseLoggingInterceptor implements ClientHttpRequestInterceptor {
 
@@ -54,7 +52,6 @@ public class RequestResponseLoggingInterceptor implements ClientHttpRequestInter
             log.debug("Status code  : {}", response.getStatusCode());
             log.debug("Status text  : {}", response.getStatusText());
             log.debug("Headers      : {}", response.getHeaders());
-            log.debug("Response body: {}", StreamUtils.copyToString(response.getBody(), Charset.defaultCharset()));
             log.debug("=======================response end=================================================");
         }
     }
