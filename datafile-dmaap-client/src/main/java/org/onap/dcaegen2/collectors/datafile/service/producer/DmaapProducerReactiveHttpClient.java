@@ -67,7 +67,6 @@ public class DmaapProducerReactiveHttpClient {
 
     private IFileSystemResource fileResource;
     private IRestTemplate restTemplate;
-    private InputStream fileInputStream;
 
     /**
      * Constructor DmaapProducerReactiveHttpClient.
@@ -100,7 +99,8 @@ public class DmaapProducerReactiveHttpClient {
 
             addUserCredentialsToHead(headers);
 
-            HttpEntity<byte[]> request = addFileToRequest(consumerDmaapModel, headers);
+            InputStream fileInputStream = getInputStream(consumerDmaapModel.getLocation());
+            HttpEntity<byte[]> request = addFileToRequest(fileInputStream, headers);
 
 
             logger.trace("Starting to publish to DR");
@@ -130,10 +130,9 @@ public class DmaapProducerReactiveHttpClient {
         headers.set(X_ATT_DR_META, metaData.toString());
     }
 
-    private HttpEntity<byte[]> addFileToRequest(ConsumerDmaapModel consumerDmaapModel, HttpHeaders headers)
+    private HttpEntity<byte[]> addFileToRequest(InputStream inputStream, HttpHeaders headers)
             throws IOException {
-        fileInputStream = getInputStream(consumerDmaapModel.getLocation());
-        return new HttpEntity<>(IOUtils.toByteArray(fileInputStream), headers);
+        return new HttpEntity<>(IOUtils.toByteArray(inputStream), headers);
     }
     private InputStream getInputStream(String filePath) throws IOException {
         if (fileResource == null) {
