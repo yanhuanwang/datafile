@@ -80,6 +80,7 @@ public class DmaapReactiveWebClient {
             logger.info("Request: {} {}", clientRequest.method(), clientRequest.url());
             clientRequest.headers()
                     .forEach((name, values) -> values.forEach(value -> logger.info("{}={}", name, value)));
+            logger.info("HTTP request headers: " + clientRequest.headers().toString());
             return Mono.just(clientRequest);
         });
     }
