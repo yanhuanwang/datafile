@@ -51,7 +51,7 @@ class DmaapProducerReactiveHttpClientTest {
     private static final String X_ATT_DR_META = "X-ATT-DR-META";
 
     private static final String HOST = "54.45.33.2";
-    private static final String HTTPS_SCHEME = "https";
+    private static final String HTTPS_SCHEME = "http";
     private static final int PORT = 1234;
     private static final String APPLICATION_OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
     private static final String PUBLISH_TOPIC = "publish";

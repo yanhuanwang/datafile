@@ -57,7 +57,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
                 closeDownConnection(ftps);
             }
         } catch (IOException ex) {
-            logger.error("Unable to collect file from xNF. {} Cause: {}", fileServerData, ex);
+            logger.error("Unable to collect file from xNF. Data: {}", fileServerData, ex);
             result = false;
         }
         logger.trace("collectFile left with result: {}", result);
@@ -87,7 +87,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
                 ftps.enterLocalPassiveMode();
             }
         } catch (Exception ex) {
-            logger.error("Unable to connect to xNF. {} Cause: {}", fileServerData, ex);
+            logger.error("Unable to connect to xNF. Data: {}", fileServerData, ex);
             success = false;
         }
 

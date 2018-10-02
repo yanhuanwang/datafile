@@ -92,11 +92,9 @@ public class DmaapProducerReactiveHttpClient {
      */
     public Flux<String> getDmaapProducerResponse(ConsumerDmaapModel consumerDmaapModel) {
         logger.trace("Entering getDmaapProducerResponse with {}", consumerDmaapModel);
-
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(dmaapContentType));
-
             addMetaDataToHead(consumerDmaapModel, headers);
 
             addUserCredentialsToHead(headers);
@@ -136,7 +134,6 @@ public class DmaapProducerReactiveHttpClient {
         InputStream in = getInputStream(consumerDmaapModel.getLocation());
         return new HttpEntity<>(IOUtils.toByteArray(in), headers);
     }
-
     private InputStream getInputStream(String filePath) throws IOException {
         if (fileResource == null) {
             fileResource = new FileSystemResourceWrapper(filePath);
