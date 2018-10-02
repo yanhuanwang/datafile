@@ -17,13 +17,19 @@
 package org.onap.dcaegen2.collectors.datafile.ftp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
-import org.apache.commons.net.util.TrustManagerUtils;
+import org.apache.commons.net.util.KeyManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -66,7 +72,36 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
 
     private boolean setUpConnection(FileServerData fileServerData, FTPSClient ftps) {
         boolean success = true;
-        ftps.setTrustManager(TrustManagerUtils.getAcceptAllTrustManager());
+        ftps.setNeedClientAuth(true);
+
+        // keymanager
+        String keystorePath = fileServerData.ftpKeyPath();
+        String keystorePass = fileServerData.ftpKeyPassword();
+        logger.info("keystorePath is: "+ keystorePath);
+        KeyManager keyManager = null;
+        try {
+            keyManager = KeyManagerUtils.createClientKeyManager(new File(keystorePath), keystorePass);
+        } catch (GeneralSecurityException | IOException e) {
+            logger.debug(e.getMessage());
+        }
+        ftps.setKeyManager(keyManager);
+
+        // trustmanager
+        String trustedCAPath = fileServerData.trustedCAPath();
+        String trustedCAPass = fileServerData.trustedCAPassword();
+        logger.info("trustedCAPath is: "+ trustedCAPath);
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            FileInputStream fis = new FileInputStream(trustedCAPath);
+            ks.load(fis, trustedCAPass.toCharArray());
+            fis.close();
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("JKS");
+            tmf.init(ks);
+            ftps.setTrustManager(tmf.getTrustManagers()[0]);
+
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+        }
 
         try {
             ftps.connect(fileServerData.serverAddress(), fileServerData.port());
@@ -85,6 +120,10 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
                     success = false;
                 }
                 ftps.enterLocalPassiveMode();
+                // Set protection buffer size
+                ftps.execPBSZ(0);
+                // Set data channel protection to private
+                ftps.execPROT("P");
             }
         } catch (Exception ex) {
             logger.error("Unable to connect to xNF. Data: {}", fileServerData, ex);

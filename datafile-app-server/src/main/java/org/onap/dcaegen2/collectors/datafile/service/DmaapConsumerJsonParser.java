@@ -16,11 +16,6 @@
 
 package org.onap.dcaegen2.collectors.datafile.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -44,7 +44,6 @@ import reactor.core.publisher.Mono;
  * @author <a href="mailto:henrik.b.andersson@est.tech">Henrik Andersson</a>
  */
 public class DmaapConsumerJsonParser {
-
     private static final Logger logger = LoggerFactory.getLogger(DmaapConsumerJsonParser.class);
 
     private static final String EVENT = "event";
@@ -72,6 +71,7 @@ public class DmaapConsumerJsonParser {
     }
 
     private Mono<JsonElement> getJsonParserMessage(String message) {
+        logger.trace("original message from message router: " + message);
         return StringUtils.isEmpty(message) ? Mono.error(new DmaapEmptyResponseException())
             : Mono.fromSupplier(() -> new JsonParser().parse(message));
     }
@@ -87,6 +87,8 @@ public class DmaapConsumerJsonParser {
     }
 
     public Optional<JsonObject> getJsonObjectFromAnArray(JsonElement element) {
+        logger.trace("starting to getJsonObjectFromAnArray!");
+
         return Optional.of(new JsonParser().parse(element.getAsString()).getAsJsonObject());
     }
 
@@ -103,10 +105,13 @@ public class DmaapConsumerJsonParser {
             String changeType = getValueFromJson(notificationFields, CHANGE_TYPE);
             String notificationFieldsVersion = getValueFromJson(notificationFields, NOTIFICATION_FIELDS_VERSION);
             JsonArray arrayOfNamedHashMap = notificationFields.getAsJsonArray(ARRAY_OF_NAMED_HASH_MAP);
-
+            logger.info("changeIdentifier: "+changeIdentifier);
+            logger.info("changeType: "+changeType);
+            logger.info("notificationFieldsVersion: "+notificationFieldsVersion);
             if (isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)
                 && arrayOfNamedHashMap != null) {
                 return getAllFileDataFromJson(changeIdentifier, changeType, arrayOfNamedHashMap);
+
             }
 
             if (!isNotificationFieldsHeaderNotEmpty(changeIdentifier, changeType, notificationFieldsVersion)) {
@@ -143,6 +148,8 @@ public class DmaapConsumerJsonParser {
     }
 
     private FileData getFileDataFromJson(JsonObject fileInfo, String changeIdentifier, String changeType) {
+        logger.trace("starting to getFileDataFromJson!");
+
         FileData fileData = null;
 
         String name = getValueFromJson(fileInfo, NAME);
@@ -151,6 +158,11 @@ public class DmaapConsumerJsonParser {
         String fileFormatVersion = getValueFromJson(data, FILE_FORMAT_VERSION);
         String location = getValueFromJson(data, LOCATION);
         String compression = getValueFromJson(data, COMPRESSION);
+        logger.trace("name: "+name);
+        logger.trace("fileFormatType: "+fileFormatType);
+        logger.trace("fileFormatVersion: "+fileFormatVersion);
+        logger.trace("location: "+location);
+        logger.trace("compression: "+compression);
 
         if (isFileFormatFieldsNotEmpty(fileFormatVersion, fileFormatType)
             && isNameAndLocationAndCompressionNotEmpty(name, location, compression)) {
