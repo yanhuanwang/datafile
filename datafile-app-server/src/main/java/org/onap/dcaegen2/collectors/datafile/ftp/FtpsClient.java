@@ -129,12 +129,13 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
             logger.error("Unable to connect to xNF. Data: {}", fileServerData, ex);
             success = false;
         }
-
+        logger.trace("setUpConnection return value: {}", success);
         return success;
     }
 
     private void getFile(String remoteFile, String localFile, FTPSClient ftps)
             throws IOException {
+        logger.trace("starting to getFile");
         OutputStream output;
         File outfile = new File(localFile);
         outfile.createNewFile();
@@ -148,6 +149,7 @@ public class FtpsClient { // TODO: Should be final but needs PowerMock or Mockit
     }
 
     private void closeDownConnection(FTPSClient ftps) {
+        logger.trace("starting to closeDownConnection");
         try {
             ftps.logout();
             ftps.disconnect();
