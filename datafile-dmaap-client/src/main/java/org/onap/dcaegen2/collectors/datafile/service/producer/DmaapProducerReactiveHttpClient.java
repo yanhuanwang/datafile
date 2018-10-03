@@ -16,9 +16,6 @@
 
 package org.onap.dcaegen2.collectors.datafile.service.producer;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -40,6 +37,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import reactor.core.publisher.Flux;
 

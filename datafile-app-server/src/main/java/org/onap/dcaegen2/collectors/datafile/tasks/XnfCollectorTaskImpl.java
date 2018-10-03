@@ -19,6 +19,9 @@ package org.onap.dcaegen2.collectors.datafile.tasks;
 import java.io.File;
 import java.net.URI;
 
+import org.onap.dcaegen2.collectors.datafile.configuration.AppConfig;
+import org.onap.dcaegen2.collectors.datafile.configuration.Config;
+import org.onap.dcaegen2.collectors.datafile.configuration.FtpesConfig;
 import org.onap.dcaegen2.collectors.datafile.ftp.FileServerData;
 import org.onap.dcaegen2.collectors.datafile.ftp.FtpsClient;
 import org.onap.dcaegen2.collectors.datafile.ftp.ImmutableFileServerData;
@@ -44,14 +47,77 @@ public class XnfCollectorTaskImpl implements XnfCollectorTask {
     private static final String SFTP = "sftp";
 
     private static final Logger logger = LoggerFactory.getLogger(XnfCollectorTaskImpl.class);
+    private Config datafileAppConfig;
 
     private final FtpsClient ftpsClient;
     private final SftpClient sftpClient;
 
+    private String keyCertPath;
+    private String keyCertPassword;
+    private String trustedCAPath;
+    private String trustedCAPassword;
+
     @Autowired
-    protected XnfCollectorTaskImpl(FtpsClient ftpsCleint, SftpClient sftpClient) {
+    protected XnfCollectorTaskImpl(AppConfig datafileAppConfig, FtpsClient ftpsCleint, SftpClient sftpClient) {
+        this.datafileAppConfig = datafileAppConfig;
         this.ftpsClient = ftpsCleint;
         this.sftpClient = sftpClient;
+        this.keyCertPath = "";
+        this.keyCertPassword = "";
+        this.trustedCAPath = "";
+        this.trustedCAPassword = "";
+    }
+
+    /**
+     * @param ftpsClient
+     * @param sftpClient
+     */
+    public XnfCollectorTaskImpl(FtpsClient ftpsClient, SftpClient sftpClient) {
+        super();
+        this.ftpsClient = ftpsClient;
+        this.sftpClient = sftpClient;
+    }
+
+    protected XnfCollectorTaskImpl(FtpsClient ftpsClient, SftpClient sftpClient, String keyCert, String keyCertPassword,
+            String trustedCA, String trustedCAPassword) {
+        this.ftpsClient = ftpsClient;
+        this.sftpClient = sftpClient;
+        this.keyCertPath = keyCert;
+        this.keyCertPassword = keyCertPassword;
+        this.trustedCAPath = trustedCA;
+        this.trustedCAPassword = trustedCAPassword;
+    }
+
+    public String getKeyCertPath() {
+        return keyCertPath;
+    }
+
+    public void setKeyCertPath(String keyCertPath) {
+        this.keyCertPath = keyCertPath;
+    }
+
+    public String getKeyCertPassword() {
+        return keyCertPassword;
+    }
+
+    public void setKeyCertPassword(String keyCertPassword) {
+        this.keyCertPassword = keyCertPassword;
+    }
+
+    public String getTrustedCAPath() {
+        return trustedCAPath;
+    }
+
+    public void setTrustedCAPath(String trustedCAPath) {
+        this.trustedCAPath = trustedCAPath;
+    }
+
+    public String getTrustedCAPassword() {
+        return trustedCAPassword;
+    }
+
+    public void setTrustedCAPassword(String trustedCAPassword) {
+        this.trustedCAPassword = trustedCAPassword;
     }
 
     @Override
@@ -68,17 +134,35 @@ public class XnfCollectorTaskImpl implements XnfCollectorTask {
         return Flux.empty();
     }
 
+    @Override
+    public FtpesConfig resolveConfiguration() {
+        return datafileAppConfig.getFtpesConfiguration();
+    }
+
+    public void resolveKeyStore() {
+
+         setKeyCertPath(datafileAppConfig.getFtpesConfiguration().keyCert());
+         setKeyCertPassword(datafileAppConfig.getFtpesConfiguration().keyPassword());
+         setTrustedCAPath(datafileAppConfig.getFtpesConfiguration().trustedCA());
+         setTrustedCAPassword(datafileAppConfig.getFtpesConfiguration().trustedCAPassword());
+    }
+
     private String collectFile(FileData fileData) {
+        logger.info("starting to collectFile");
+        resolveKeyStore();
         String location = fileData.location();
         URI uri = URI.create(location);
         String[] userInfo = getUserNameAndPasswordIfGiven(uri.getUserInfo());
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(uri.getHost())
                 .userId(userInfo != null ? userInfo[0] : "").password(userInfo != null ? userInfo[1] : "")
-                .port(uri.getPort()).build();
+                .port(uri.getPort()).ftpKeyPath(this.getKeyCertPath()).ftpKeyPassword(this.getKeyCertPassword())
+                .trustedCAPath(this.getTrustedCAPath()).trustedCAPassword(this.getTrustedCAPassword()).build();
         String remoteFile = uri.getPath();
         String localFile = "target" + File.separator + fileData.name();
         String scheme = uri.getScheme();
-
+        logger.info("remoteFile: "+remoteFile);
+        logger.info("localFile: "+localFile);
+        logger.info("scheme: "+scheme);
         boolean fileDownloaded = false;
         if (FTPES.equals(scheme) || FTPS.equals(scheme)) {
             fileDownloaded = ftpsClient.collectFile(fileServerData, remoteFile, localFile);

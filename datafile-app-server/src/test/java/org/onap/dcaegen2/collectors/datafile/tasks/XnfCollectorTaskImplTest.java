@@ -74,7 +74,8 @@ public class XnfCollectorTaskImplTest {
                 .fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).userId(USER)
-                .password(PWD).port(PORT_22).build();
+                .password(PWD).port(PORT_22).ftpKeyPath("").ftpKeyPassword("")
+                .trustedCAPath("").trustedCAPassword("").build();
         when(ftpsClientMock.collectFile(fileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION))
                 .thenReturn(Boolean.TRUE);
 
@@ -97,7 +98,8 @@ public class XnfCollectorTaskImplTest {
                 .fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).userId("")
-                .password("").port(PORT_22).build();
+                .password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("")
+                .trustedCAPath("").trustedCAPassword("").build();
         when(sftpClientMock.collectFile(fileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION))
                 .thenReturn(Boolean.TRUE);
 
@@ -120,7 +122,8 @@ public class XnfCollectorTaskImplTest {
                 .fileFormatVersion(FILE_FORMAT_VERSION).build();
 
         FileServerData fileServerData = ImmutableFileServerData.builder().serverAddress(SERVER_ADDRESS).userId("")
-                .password("").port(PORT_22).build();
+                .password("").port(PORT_22).ftpKeyPath("").ftpKeyPassword("")
+                .trustedCAPath("").trustedCAPassword("").build();
         when(sftpClientMock.collectFile(fileServerData, REMOTE_FILE_LOCATION, LOCAL_FILE_LOCATION))
                 .thenReturn(Boolean.TRUE);
 
