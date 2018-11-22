@@ -73,6 +73,7 @@ public class DmaapProducerReactiveHttpClient {
     private final String pwd;
 
     private IFileSystemResource fileResource;
+    private CloseableHttpAsyncClient webClient;
 
     /**
      * Constructor DmaapProducerReactiveHttpClient.
@@ -100,26 +101,18 @@ public class DmaapProducerReactiveHttpClient {
         try {
             logger.trace("Starting to publish to DR");
 
-            SSLContext sslContext =
-                    new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
-            //@formatter:off
-            CloseableHttpAsyncClient client = HttpAsyncClients.custom()
-                    .setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                    .setRedirectStrategy(PublishRedirectStrategy.INSTANCE)
-                    .build();
-            //@formatter:on
-            client.start();
+            webClient = getWebClient();
+            webClient.start();
 
             HttpPut put = new HttpPut();
             prepareHead(consumerDmaapModel, put);
             prepareBody(consumerDmaapModel, put);
             addUserCredentialsToHead(put);
 
-            Future<HttpResponse> future = client.execute(put, null);
+            Future<HttpResponse> future = webClient.execute(put, null);
             HttpResponse response = future.get();
             logger.trace(response.toString());
-            client.close();
+            webClient.close();
             handleHttpResponse(response);
             return Flux.just(response.toString());
         } catch (Exception e) {
@@ -187,5 +180,29 @@ public class DmaapProducerReactiveHttpClient {
 
     protected void setFileSystemResource(IFileSystemResource fileSystemResource) {
         fileResource = fileSystemResource;
+    }
+
+    protected CloseableHttpAsyncClient getWebClient() {
+        if (webClient != null) {
+            return webClient;
+        }
+        SSLContext sslContext = null;
+        try {
+            sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
+        } catch (Exception e) {
+            logger.trace("Unable to get sslContext.", e);
+        }
+        //@formatter:off
+        CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                .setRedirectStrategy(PublishRedirectStrategy.INSTANCE)
+                .build();
+        //@formatter:on
+        return client;
+    }
+
+    protected void setWebClient(CloseableHttpAsyncClient client) {
+        this.webClient = client;
     }
 }

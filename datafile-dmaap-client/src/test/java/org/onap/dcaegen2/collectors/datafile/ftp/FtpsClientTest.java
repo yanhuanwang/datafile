@@ -150,6 +150,10 @@ public class FtpsClientTest {
         FileCollectResult result = clientUnderTest.collectFile(fileServerData, REMOTE_FILE_PATH, LOCAL_FILE_PATH);
 
         assertFalse(result.downloadSuccessful());
+        verify(ftpsClientMock).setNeedClientAuth(true);
+        verify(keyManagerUtilsMock).setCredentials(FTP_KEY_PATH, FTP_KEY_PASSWORD);
+        verify(ftpsClientMock, times(1)).isConnected();
+        verifyNoMoreInteractions(ftpsClientMock);
     }
 
     @Test
@@ -166,6 +170,15 @@ public class FtpsClientTest {
         FileCollectResult result = clientUnderTest.collectFile(fileServerData, REMOTE_FILE_PATH, LOCAL_FILE_PATH);
 
         assertFalse(result.downloadSuccessful());
+        verify(ftpsClientMock).setNeedClientAuth(true);
+        verify(keyManagerUtilsMock).setCredentials(FTP_KEY_PATH, FTP_KEY_PASSWORD);
+        verify(ftpsClientMock).setKeyManager(keyManagerMock);
+        verify(fileResourceMock).setPath(TRUSTED_CA_PATH);
+        verify(keyStoreWrapperMock).load(inputStreamMock, TRUSTED_CA_PASSWORD.toCharArray());
+        verify(inputStreamMock, times(1)).close();
+        verify(trustManagerFactoryMock).init(keyStoreMock);
+        verify(ftpsClientMock, times(1)).isConnected();
+        verifyNoMoreInteractions(ftpsClientMock);
     }
 
     @Test
@@ -241,6 +254,17 @@ public class FtpsClientTest {
         FileCollectResult result = clientUnderTest.collectFile(fileServerData, REMOTE_FILE_PATH, LOCAL_FILE_PATH);
 
         assertFalse(result.downloadSuccessful());
+        verify(ftpsClientMock).setNeedClientAuth(true);
+        verify(keyManagerUtilsMock).setCredentials(FTP_KEY_PATH, FTP_KEY_PASSWORD);
+        verify(ftpsClientMock).setKeyManager(keyManagerMock);
+        verify(fileResourceMock).setPath(TRUSTED_CA_PATH);
+        verify(keyStoreWrapperMock).load(inputStreamMock, TRUSTED_CA_PASSWORD.toCharArray());
+        verify(inputStreamMock, times(1)).close();
+        verify(trustManagerFactoryMock).init(keyStoreMock);
+        verify(ftpsClientMock).setTrustManager(trustManagerMock);
+        verify(ftpsClientMock).connect(XNF_ADDRESS, PORT);
+        verify(ftpsClientMock, times(3)).isConnected();
+        verifyNoMoreInteractions(ftpsClientMock);
     }
 
     @Test
@@ -261,6 +285,26 @@ public class FtpsClientTest {
 
         assertFalse(result.downloadSuccessful());
         verify(localFileMock, times(1)).delete();
+        verify(ftpsClientMock).setNeedClientAuth(true);
+        verify(keyManagerUtilsMock).setCredentials(FTP_KEY_PATH, FTP_KEY_PASSWORD);
+        verify(ftpsClientMock).setKeyManager(keyManagerMock);
+        verify(fileResourceMock).setPath(TRUSTED_CA_PATH);
+        verify(keyStoreWrapperMock).load(inputStreamMock, TRUSTED_CA_PASSWORD.toCharArray());
+        verify(inputStreamMock, times(1)).close();
+        verify(trustManagerFactoryMock).init(keyStoreMock);
+        verify(ftpsClientMock).setTrustManager(trustManagerMock);
+        verify(ftpsClientMock).connect(XNF_ADDRESS, PORT);
+        verify(ftpsClientMock).login(USERNAME, PASSWORD);
+        verify(ftpsClientMock).getReplyCode();
+        verify(ftpsClientMock, times(1)).enterLocalPassiveMode();
+        verify(ftpsClientMock).execPBSZ(0);
+        verify(ftpsClientMock).execPROT("P");
+        verify(ftpsClientMock).setFileType(FTP.BINARY_FILE_TYPE);
+        verify(ftpsClientMock).setBufferSize(1024*1024);
+        verify(localFileMock).setPath(LOCAL_FILE_PATH);
+        verify(localFileMock, times(1)).createNewFile();
+        verify(ftpsClientMock, times(2)).isConnected();
+        verifyNoMoreInteractions(ftpsClientMock);
     }
 
     @Test
@@ -283,5 +327,26 @@ public class FtpsClientTest {
         FileCollectResult result = clientUnderTest.collectFile(fileServerData, REMOTE_FILE_PATH, LOCAL_FILE_PATH);
 
         assertFalse(result.downloadSuccessful());
+        verify(ftpsClientMock).setNeedClientAuth(true);
+        verify(keyManagerUtilsMock).setCredentials(FTP_KEY_PATH, FTP_KEY_PASSWORD);
+        verify(ftpsClientMock).setKeyManager(keyManagerMock);
+        verify(fileResourceMock).setPath(TRUSTED_CA_PATH);
+        verify(keyStoreWrapperMock).load(inputStreamMock, TRUSTED_CA_PASSWORD.toCharArray());
+        verify(inputStreamMock, times(1)).close();
+        verify(trustManagerFactoryMock).init(keyStoreMock);
+        verify(ftpsClientMock).setTrustManager(trustManagerMock);
+        verify(ftpsClientMock).connect(XNF_ADDRESS, PORT);
+        verify(ftpsClientMock).login(USERNAME, PASSWORD);
+        verify(ftpsClientMock).getReplyCode();
+        verify(ftpsClientMock, times(1)).enterLocalPassiveMode();
+        verify(ftpsClientMock).execPBSZ(0);
+        verify(ftpsClientMock).execPROT("P");
+        verify(ftpsClientMock).setFileType(FTP.BINARY_FILE_TYPE);
+        verify(ftpsClientMock).setBufferSize(1024*1024);
+        verify(localFileMock).setPath(LOCAL_FILE_PATH);
+        verify(localFileMock, times(1)).createNewFile();
+        verify(ftpsClientMock).retrieveFile(REMOTE_FILE_PATH, osMock);
+        verify(ftpsClientMock, times(2)).isConnected();
+        verifyNoMoreInteractions(ftpsClientMock);
     }
 }

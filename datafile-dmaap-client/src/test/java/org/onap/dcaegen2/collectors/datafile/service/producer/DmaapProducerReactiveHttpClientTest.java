@@ -19,7 +19,6 @@ package org.onap.dcaegen2.collectors.datafile.service.producer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.gson.JsonElement;
@@ -30,15 +29,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,11 +47,7 @@ import org.onap.dcaegen2.collectors.datafile.model.CommonFunctions;
 import org.onap.dcaegen2.collectors.datafile.model.ConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.model.ImmutableConsumerDmaapModel;
 import org.onap.dcaegen2.collectors.datafile.service.HttpUtils;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import reactor.test.StepVerifier;
@@ -83,13 +78,11 @@ class DmaapProducerReactiveHttpClientTest {
     private ConsumerDmaapModel consumerDmaapModel;
 
     private IFileSystemResource fileSystemResourceMock = mock(IFileSystemResource.class);
-    // private IRestTemplate restTemplateMock = mock(IRestTemplate.class);
-    // private ResponseEntity<String> responseEntityMock = mock(ResponseEntity.class);
-    private CloseableHttpAsyncClient clientMock = mock(CloseableHttpAsyncClient.class);
+    private CloseableHttpAsyncClient clientMock;
     private HttpResponse responseMock = mock(HttpResponse.class);
-    private Future<HttpResponse> futureMock = mock(FutureTask.class);
+    private Future<HttpResponse> futureMock = mock(Future.class);
+    private StatusLine statusLine = mock(StatusLine.class);
     private InputStream fileStream;
-
 
     @BeforeEach
     void setUp() {
@@ -120,67 +113,65 @@ class DmaapProducerReactiveHttpClientTest {
 
         dmaapProducerReactiveHttpClient = new DmaapProducerReactiveHttpClient(dmaapPublisherConfigurationMock);
         dmaapProducerReactiveHttpClient.setFileSystemResource(fileSystemResourceMock);
-//        dmaapProducerReactiveHttpClient.setRestTemplate(restTemplateMock);
+        clientMock = mock(CloseableHttpAsyncClient.class);
+        dmaapProducerReactiveHttpClient.setWebClient(clientMock);
     }
 
-//    @Test
-//    void getHttpResponse_Success() throws Exception {
-//        mockWebClientDependantObject(true);
-//
-//        StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
-//                .expectNext(HttpStatus.OK.toString()).verifyComplete();
-//
-//        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTPS_SCHEME).host(HOST).port(PORT)
-//                .path(PUBLISH_TOPIC + URI_SEPARATOR + DEFAULT_FEED_ID + URI_SEPARATOR + FILE_NAME).build();
-//
-//        HttpPut httpPut = new HttpPut();
-//        httpPut.addHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);
-//        httpPut.setURI(expectedUri);
-//
-////        HttpHeaders headers = new HttpHeaders();
-//
-////        headers.setContentType(MediaType.parseMediaType(APPLICATION_OCTET_STREAM_CONTENT_TYPE));
-//
-//        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
-//        metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
-//        metaData.getAsJsonObject().remove(INTERNAL_LOCATION_JSON_TAG);
-//        httpPut.addHeader(X_ATT_DR_META, metaData.toString());
-//
-//        String plainCreds = "dradmin" + ":" + "dradmin";
-//        byte[] plainCredsBytes = plainCreds.getBytes(StandardCharsets.ISO_8859_1);
-//        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-//        String base64Creds = new String(base64CredsBytes);
-//        httpPut.addHeader("Authorization", "Basic " + base64Creds);
-//
-//
-//        fileStream.reset();
-//
-////        HttpEntity<byte[]> requestEntity = new HttpEntity<>(IOUtils.toByteArray(fileStream), headers);
-//        verify(fileSystemResourceMock).setPath("target/" + FILE_NAME);
-//        verify(clientMock).execute(httpPut, null).get();
-//        verifyNoMoreInteractions(clientMock);
-//    }
-//
-//    @Test
-//    void getHttpResponse_Fail() throws Exception {
-//        mockWebClientDependantObject(false);
-//
-//        StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
-//                .verifyComplete();
-//    }
+    @Test
+    void getHttpResponse_Success() throws Exception {
+        mockWebClientDependantObject(true);
+
+        URI expectedUri = new DefaultUriBuilderFactory().builder().scheme(HTTPS_SCHEME).host(HOST).port(PORT)
+                .path(PUBLISH_TOPIC + URI_SEPARATOR + DEFAULT_FEED_ID + URI_SEPARATOR + FILE_NAME).build();
+
+        HttpPut httpPut = new HttpPut();
+        httpPut.addHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_OCTET_STREAM_CONTENT_TYPE);
+
+        JsonElement metaData = new JsonParser().parse(CommonFunctions.createJsonBody(consumerDmaapModel));
+        metaData.getAsJsonObject().remove(NAME_JSON_TAG).getAsString();
+        metaData.getAsJsonObject().remove(INTERNAL_LOCATION_JSON_TAG);
+        httpPut.addHeader(X_ATT_DR_META, metaData.toString());
+        httpPut.setURI(expectedUri);
+
+        String plainCreds = "dradmin" + ":" + "dradmin";
+        byte[] plainCredsBytes = plainCreds.getBytes(StandardCharsets.ISO_8859_1);
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        httpPut.addHeader("Authorization", "Basic " + base64Creds);
+
+        fileStream.reset();
+        StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
+        .expectNext(responseMock.toString()).verifyComplete();
+
+        verify(fileSystemResourceMock).setPath("target/" + FILE_NAME);
+        InputStream fileInputStream = fileSystemResourceMock.getInputStream();
+        httpPut.setEntity(new ByteArrayEntity(IOUtils.toByteArray(fileInputStream)));
+        /*
+         * perhaps need to do more check here, eg:
+         * verify(clientMock).execute(httpPut, null).get();
+         * verifyNoMoreInteractions(clientMock);
+        */
+    }
+
+    @Test
+    void getHttpResponse_Fail() throws Exception {
+        mockWebClientDependantObject(false);
+        StepVerifier.create(dmaapProducerReactiveHttpClient.getDmaapProducerResponse(consumerDmaapModel))
+                .verifyComplete();
+    }
 
     private void mockWebClientDependantObject(boolean success)
             throws IOException, InterruptedException, ExecutionException {
         fileStream = new ByteArrayInputStream(FILE_CONTENT.getBytes());
         when(fileSystemResourceMock.getInputStream()).thenReturn(fileStream);
-
         if (success) {
+            when(clientMock.execute(any(HttpPut.class), any())).thenReturn(futureMock);
             when(futureMock.get()).thenReturn(responseMock);
-            when(futureMock.isDone()).thenReturn(true);
-            when(clientMock.execute(any(), any())).thenReturn(futureMock);
-            when(responseMock.getStatusLine().getStatusCode()).thenReturn(HttpUtils.SC_OK);
+            when(responseMock.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(HttpUtils.SC_OK);
         } else {
-            when(clientMock.execute(any(), any())).thenThrow(new RuntimeException());
+            when(clientMock.execute(any(HttpPut.class), any())).thenReturn(futureMock);
+            when(futureMock.get()).thenThrow(new InterruptedException());
         }
     }
 }
