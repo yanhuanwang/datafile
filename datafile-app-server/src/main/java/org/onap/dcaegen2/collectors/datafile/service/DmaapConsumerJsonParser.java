@@ -96,25 +96,30 @@ public class DmaapConsumerJsonParser {
     }
 
     private Flux<FileData> createJsonConsumerModel(JsonElement jsonElement) {
-        return jsonElement.isJsonObject() ? create(Mono.fromSupplier(jsonElement::getAsJsonObject))
+        logger.trace("after JsonParser: ", jsonElement.toString());
+        boolean flag = jsonElement.isJsonObject();
+        return jsonElement.isJsonObject() ? create(Flux.just(jsonElement.getAsJsonObject()))
                 : getFileDataFromJsonArray(jsonElement);
     }
 
     private Flux<FileData> getFileDataFromJsonArray(JsonElement jsonElement) {
-        return create(Mono.fromCallable(() -> StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
-                .findFirst().flatMap(this::getJsonObjectFromAnArray).orElseThrow(DmaapEmptyResponseException::new)));
+        return create(
+                Flux.defer(() -> Flux.fromStream(StreamSupport.stream(jsonElement.getAsJsonArray().spliterator(), false)
+                        .map(jsonElementFromArray -> getJsonObjectFromAnArray(jsonElementFromArray)
+                                .orElseGet(JsonObject::new)))));
     }
 
     public Optional<JsonObject> getJsonObjectFromAnArray(JsonElement element) {
         logger.trace("starting to getJsonObjectFromAnArray!");
-
         return Optional.of(new JsonParser().parse(element.getAsString()).getAsJsonObject());
     }
 
-    private Flux<FileData> create(Mono<JsonObject> jsonObject) {
-        return jsonObject.flatMapMany(monoJsonP -> !containsHeader(monoJsonP)
-                ? Flux.error(new DmaapNotFoundException("Incorrect JsonObject - missing header"))
-                : transform(monoJsonP));
+    private Flux<FileData> create(Flux<JsonObject> flux) {
+        return flux
+                .flatMap(monoJsonP -> !containsHeader(monoJsonP)
+                        ? Flux.empty()
+                        : transform(monoJsonP))
+                .onErrorResume(exception -> exception instanceof DmaapNotFoundException, e -> Mono.empty());
     }
 
     private Flux<FileData> transform(JsonObject jsonObject) {

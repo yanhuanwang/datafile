@@ -182,9 +182,9 @@ public class FtpsClient extends FileCollectClient {
 
             IOutputStream outputStream = getOutputStream();
             OutputStream output = outputStream.getOutputStream(outfile.getFile());
-            logger.trace("begin to retrieve from xNF.");
+            logger.trace("Begin to retrieve from xNF.");
             result = ftps.retrieveFile(remoteFile, output);
-            logger.trace("end retrieve from xNF.");
+            logger.trace("End retrieve from xNF.");
             if (!result) {
                 output.close();
                 logger.debug("Unable to retrieve file from xNF. Cause unknown!");
